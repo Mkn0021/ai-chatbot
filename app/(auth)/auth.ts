@@ -1,4 +1,5 @@
 import db from "@/lib/db";
+import { env } from "@/lib/env";
 import { headers } from "next/headers";
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
@@ -13,6 +14,12 @@ export const auth = betterAuth({
             enabled: true,
             maxAge: 60 * 60 * 24 * 7 // 7 days
         }
+    },
+    socialProviders: {
+        google: {
+            clientId: env.GOOGLE_CLIENT_ID,
+            clientSecret: env.GOOGLE_CLIENT_SECRET,
+        },
     },
     plugins: [nextCookies()],
     database: drizzleAdapter(db, {
