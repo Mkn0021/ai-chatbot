@@ -5,6 +5,8 @@ dotenv.config();
 
 const EnvSchema = z.object({
     POSTGRES_URL: z.url().nonempty("POSTGRES_URL is required"),
+    BETTER_AUTH_URL: z.url().default("http://localhost:3000"),
+    BETTER_AUTH_SECRET: z.string().min(1, "BETTER_AUTH must be provided for Authentication"),
 })
 
 
