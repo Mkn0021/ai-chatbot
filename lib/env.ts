@@ -14,7 +14,12 @@ const EnvSchema = z.object({
 })
 
 
-export const env = (() => {
+export const env: z.infer<typeof EnvSchema> = (() => {
+    if (process.env.SKIP_ENV_VALIDATION === "true") {
+        console.warn("⚠️ Skipping env validation due to SKIP_ENV_VALIDATION=true");
+        return process.env as any;
+    }
+
     const result = EnvSchema.safeParse(process.env);
     if (!result.success) {
         throw new Error(
