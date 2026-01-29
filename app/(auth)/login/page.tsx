@@ -17,12 +17,12 @@ export default function Login() {
                     <div className="py-10 flex flex-col gap-2">
                         <SectionHeader as="h1">
                             Transform Your
-                            <span className="text-orange-500"> Data</span>
+                            <span className="text-primary"> Data</span>
                             <br />
-                            into <span className="text-orange-500">AI-Driven</span> Actions
+                            into <span className="text-primary">AI-Driven</span> Actions
                         </SectionHeader>
                         <SectionSubHeader className="max-w-lg">
-                            Instantly query, analyze, and automate across all your databases with AI that runs locally or in the cloud—fully private and under your control.
+                            Instantly query, analyze, and automate across your databases with AI that runs locally or in the cloud, fully private and under your control.
                         </SectionSubHeader>
                         <Image
                             src={"/dotted-world-map.svg"}
@@ -35,7 +35,7 @@ export default function Login() {
                 </div>
                 <div className="flex-1 flex flex-col items-center justify-center py-4 px-6">
                     <Logo className="lg:hidden mb-8" />
-                    <Suspense fallback={<div className="text-orange-500">Loading...</div>}>
+                    <Suspense fallback={<div className="text-primary">Loading...</div>}>
                         <AuthForm />
                     </Suspense>
                 </div>

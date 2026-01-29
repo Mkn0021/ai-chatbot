@@ -45,8 +45,6 @@ const AuthForm: React.FC = () => {
         },
     });
 
-    const inputboxStyling = "h-9 rounded-[6px] border-[0.5px] border-[#E5E5E5] bg-[#F2F2F2] focus-visible:ring-1 focus-visible:ring-offset-0"
-
     const onSubmit = async (values: SignupForm | LoginForm) => {
         setLoading(true);
 
@@ -124,7 +122,7 @@ const AuthForm: React.FC = () => {
                                 <FormItem>
                                     <FormLabel>Full Name</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Enter your full name" {...field} className={inputboxStyling} />
+                                        <Input placeholder="Enter your full name" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -139,7 +137,7 @@ const AuthForm: React.FC = () => {
                             <FormItem>
                                 <FormLabel>Email</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Enter your email" {...field} className={inputboxStyling} />
+                                    <Input placeholder="Enter your email" {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -156,7 +154,6 @@ const AuthForm: React.FC = () => {
                                     <Input
                                         type="password"
                                         placeholder="••••••••"
-                                        className={inputboxStyling}
                                         autoComplete={mode === "signup" ? "new-password" : "password"}
                                         {...field} />
                                 </FormControl>
@@ -173,7 +170,7 @@ const AuthForm: React.FC = () => {
                                 <FormItem>
                                     <FormLabel>Confirm Password</FormLabel>
                                     <FormControl>
-                                        <Input type="password" placeholder="••••••••" autoComplete="new-password" {...field} className={inputboxStyling} />
+                                        <Input type="password" placeholder="••••••••" autoComplete="new-password" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
