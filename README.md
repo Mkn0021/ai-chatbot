@@ -48,11 +48,3 @@ npm run dev
 ```
 
 The app will be available at [http://localhost:3000](http://localhost:3000).
-
-## Run with Docker (One Command)
-
-To start both the database and app using Docker Compose, run:
-
-```bash
-docker compose -f docker-compose.db.yml up -d && docker compose -f docker-compose.app.yml up --build -d
-```
