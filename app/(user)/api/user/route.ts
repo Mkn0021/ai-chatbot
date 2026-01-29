@@ -1,7 +1,7 @@
-import { asyncHandler } from "@/lib/api/response";
-import { getAllUsers } from "@/app/(user)/api/action";
-import { FetchUsersSchema } from "@/app/(user)/api/schema";
 import APIError from "@/lib/api/error";
+import { asyncHandler } from "@/lib/api/response";
+import { getAllUsers } from "@/app/(user)/action";
+import { FetchUsersSchema } from "@/app/(user)/schema";
 
 // GET /api/user
 export const GET = asyncHandler(

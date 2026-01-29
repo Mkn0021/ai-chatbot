@@ -1,7 +1,7 @@
 import APIError from "@/lib/api/error";
 import { asyncHandler } from "@/lib/api/response";
-import { getUserById, updateUser, deleteUserById } from "@/app/(user)/api/action";
-import { UserIdParamsSchema, AdminUpdateUserSchema } from "@/app/(user)/api/schema";
+import { getUserById, updateUser, deleteUserById } from "@/app/(user)/action";
+import { UserIdParamsSchema, AdminUpdateUserSchema } from "@/app/(user)/schema";
 
 
 // GET - api/user/[userId]
