@@ -1,4 +1,5 @@
 import APIError from "./error";
+import { auth } from "@/app/(auth)/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { errorHandler } from "@/middlewares/error-handler";
 import { validateRequest } from '@/middlewares/validate-request';
@@ -76,19 +77,26 @@ export const apiResponse = {
 export const asyncHandler = <T, S extends ValidationSchema | undefined>(
     handler: (
         req: NextRequest,
-        context: { params?: Record<string, string> },
+        context: {
+            params?: Record<string, string>
+            session?: Awaited<ReturnType<typeof auth.api.getSession>>
+        },
         validatedData: InferValidatedData<S>
     ) => Promise<HandlerResult<T>>,
-    schema?: S
+    schema?: S,
+    requireAuth = true
 ) => {
     return async (req: NextRequest, context: { params: Promise<Record<string, string>> }) => {
         try {
             // Resolve the Promise for params (Next.js 14+ compatibility)
             const resolvedParams = await context.params;
 
-            // TODO: Implement input sanitization, rate limiting, and authentication as needed
+            const session = await auth.api.getSession({ headers: req.headers })
+            if (requireAuth && !session) throw APIError.unauthorized("You must be logged in to access this resource");
+
+            // TODO: Implement input sanitization, rate limiting as needed
             const validatedData = await validateRequest(req, schema, resolvedParams);
-            const result = await handler(req, { params: resolvedParams }, validatedData as InferValidatedData<S>);
+            const result = await handler(req, { params: resolvedParams, session }, validatedData as InferValidatedData<S>);
 
             return apiResponse.success(
                 result.data ?? null,
