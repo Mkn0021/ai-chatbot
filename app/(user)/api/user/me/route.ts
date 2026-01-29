@@ -1,6 +1,5 @@
 import APIError from '@/lib/api/error';
 import { auth } from '@/app/(auth)/auth';
-import { NextRequest } from 'next/server';
 import { asyncHandler } from '@/lib/api/response';
 import { UpdateMeSchema } from '@/app/(user)/api/schema';
 import { deleteUserById, getUserById, updateUser } from '@/app/(user)/api/action';
@@ -8,7 +7,7 @@ import { deleteUserById, getUserById, updateUser } from '@/app/(user)/api/action
 
 // GET - api/user/me
 export const GET = asyncHandler(
-    async (_, context) => {
+    async (_, context, __) => {
 
         const userRecord = await getUserById(context.session!.user.id);
         if (!userRecord) throw APIError.notFound("User not found");
@@ -37,7 +36,7 @@ export const PUT = asyncHandler(
 
 // DELETE - api/user/me
 export const DELETE = asyncHandler(
-    async (req: NextRequest, context) => {
+    async (req, context, __) => {
 
         await deleteUserById(context.session!.user.id);
         await auth.api.signOut({ headers: req.headers });
