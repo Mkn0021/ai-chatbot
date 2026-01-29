@@ -31,9 +31,9 @@ export function DesktopNavbar() {
         ])
     }
 
-    const contentStyle = {
-        buttonsOpacity: useTransform(scrollY, [0, 100], [1, 0]),
-        buttonsDisplay: useTransform(scrollY, [0, 100], ["flex", "none"])
+    const buttonStyle = {
+        opacity: useTransform(scrollY, [0, 30], [1, 0]),
+        display: useTransform(scrollY, [0, 30], ["flex", "none"])
     }
 
     //TODO: after implementing mobile navbar:  hidden lg:flex
@@ -44,9 +44,7 @@ export function DesktopNavbar() {
         >
             <Logo />
 
-            <div
-                className="flex flex-row flex-1 items-center justify-end space-x-2 text-sm"
-            >
+            <div className="flex flex-row flex-1 items-center justify-end space-x-2 text-sm">
                 <div className="relative">
                     <Link className="text-black/90 relative px-3 py-1.5 transition-colors" href="/#home">
                         <span className="relative z-10">Home</span>
@@ -61,10 +59,7 @@ export function DesktopNavbar() {
 
             <motion.div
                 className="flex items-center gap-2 ml-6"
-                style={{
-                    opacity: contentStyle.buttonsOpacity,
-                    display: contentStyle.buttonsDisplay
-                }}
+                style={buttonStyle}
             >
                 <Button variant="outline" asChild>
                     <Link href="/login">Login</Link>
