@@ -9,7 +9,7 @@ export const user = pgTable("user", {
   image: text("image"),
 
   // custom field
-  role: varchar("role", { enum: ["student", "admin"] }).notNull().default("student"),
+  role: varchar("role", { enum: ["user", "admin"] }).notNull().default("user"),
 
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")

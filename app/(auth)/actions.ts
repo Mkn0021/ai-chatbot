@@ -6,7 +6,7 @@ export const authClient = createAuthClient({
         user: {
             role: {
                 type: "string",
-                defaultValue: "student",
+                defaultValue: "user",
             }
         }
     })],
