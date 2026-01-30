@@ -80,7 +80,7 @@ export function ProfileSection() {
             </div>
             <div className="space-y-1">
                 <p className="text-xs md:text-lg font-semibold bg-linear-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                    Database: ProductionDB
+                    ProductionDB
                 </p>
                 <p className="text-[10px] md:text-xs font-medium text-gray-400 tracking-wider">
                     POSTGRESQL<span className="text-green-500 font-semibold"> • ACTIVE</span>
