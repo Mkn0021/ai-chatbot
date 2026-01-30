@@ -4,6 +4,7 @@ import db from "@/lib/db";
 import APIError from "@/lib/api/error";
 import { and, asc, count, desc, eq, gt, gte, inArray, lt, type SQL } from "drizzle-orm";
 import { type Chat, chat, type DBMessage, message, stream, vote } from "@/lib/db/schemas";
+import type { GetChatsByUserId } from "./schema";
 
 type VisibilityType = "public" | "private"
 
@@ -75,19 +76,9 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
     }
 }
 
-export async function getChatsByUserId({
-    id,
-    limit,
-    startingAfter,
-    endingBefore,
-}: {
-    id: string;
-    limit: number;
-    startingAfter: string | null;
-    endingBefore: string | null;
-}) {
+export async function getChatsByUserId(inputData: GetChatsByUserId) {
     try {
-        const extendedLimit = limit + 1;
+        const extendedLimit = inputData.limit + 1;
 
         const query = (whereCondition?: SQL<any>) =>
             db
@@ -95,35 +86,35 @@ export async function getChatsByUserId({
                 .from(chat)
                 .where(
                     whereCondition
-                        ? and(whereCondition, eq(chat.userId, id))
-                        : eq(chat.userId, id)
+                        ? and(whereCondition, eq(chat.userId, inputData.id))
+                        : eq(chat.userId, inputData.id)
                 )
                 .orderBy(desc(chat.createdAt))
                 .limit(extendedLimit);
 
         let filteredChats: Chat[] = [];
 
-        if (startingAfter) {
+        if (inputData.startingAfter) {
             const [selectedChat] = await db
                 .select()
                 .from(chat)
-                .where(eq(chat.id, startingAfter))
+                .where(eq(chat.id, inputData.startingAfter))
                 .limit(1);
 
             if (!selectedChat) {
-                throw APIError.notFound(`Chat with id ${startingAfter} not found`);
+                throw APIError.notFound(`Chat with id ${inputData.startingAfter} not found`);
             }
 
             filteredChats = await query(gt(chat.createdAt, selectedChat.createdAt));
-        } else if (endingBefore) {
+        } else if (inputData.endingBefore) {
             const [selectedChat] = await db
                 .select()
                 .from(chat)
-                .where(eq(chat.id, endingBefore))
+                .where(eq(chat.id, inputData.endingBefore))
                 .limit(1);
 
             if (!selectedChat) {
-                throw APIError.notFound(`Chat with id ${endingBefore} not found`);
+                throw APIError.notFound(`Chat with id ${inputData.endingBefore} not found`);
             }
 
             filteredChats = await query(lt(chat.createdAt, selectedChat.createdAt));
@@ -131,10 +122,10 @@ export async function getChatsByUserId({
             filteredChats = await query();
         }
 
-        const hasMore = filteredChats.length > limit;
+        const hasMore = filteredChats.length > inputData.limit;
 
         return {
-            chats: hasMore ? filteredChats.slice(0, limit) : filteredChats,
+            chats: hasMore ? filteredChats.slice(0, inputData.limit) : filteredChats,
             hasMore,
         };
     } catch (_error) {
