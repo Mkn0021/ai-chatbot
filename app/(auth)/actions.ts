@@ -7,7 +7,11 @@ export const authClient = createAuthClient({
             role: {
                 type: "string",
                 defaultValue: "user",
-            }
+            },
+            organizationId: {
+                type: "string",
+                required: false,
+            },
         }
     })],
 });

@@ -1,4 +1,5 @@
 import { relations } from "drizzle-orm";
+import { organization } from "./organization";
 import { pgTable, text, timestamp, boolean, index, varchar } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -10,6 +11,10 @@ export const user = pgTable("user", {
 
   // custom field
   role: varchar("role", { enum: ["user", "admin"] }).notNull().default("user"),
+  organizationId: text("organization_id")
+    .references(() => organization.id, {
+      onDelete: "set null"
+    }),
 
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
