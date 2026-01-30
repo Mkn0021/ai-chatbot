@@ -4,7 +4,7 @@ import db from "@/lib/db";
 import APIError from "@/lib/api/error";
 import { and, asc, count, desc, eq, gt, gte, inArray, lt, type SQL } from "drizzle-orm";
 import { type Chat, chat, type DBMessage, message, stream, vote } from "@/lib/db/schemas";
-import type { GetChatsByUserId } from "./schema";
+import type { GetChatsByUserId, VoteMessageInput } from "./schema";
 
 type VisibilityType = "public" | "private"
 
@@ -180,32 +180,20 @@ export async function getMessagesByChatId({ id }: { id: string }) {
     }
 }
 
-export async function voteMessage({
-    chatId,
-    messageId,
-    type,
-}: {
-    chatId: string;
-    messageId: string;
-    type: "up" | "down";
-}) {
+export async function voteMessage(inputData: VoteMessageInput) {
     try {
         const [existingVote] = await db
             .select()
             .from(vote)
-            .where(and(eq(vote.messageId, messageId)));
+            .where(and(eq(vote.messageId, inputData.messageId)));
 
         if (existingVote) {
             return await db
                 .update(vote)
-                .set({ isUpvoted: type === "up" })
-                .where(and(eq(vote.messageId, messageId), eq(vote.chatId, chatId)));
+                .set({ isUpvoted: inputData.isUpvoted })
+                .where(and(eq(vote.messageId, inputData.messageId), eq(vote.chatId, inputData.chatId)));
         }
-        return await db.insert(vote).values({
-            chatId,
-            messageId,
-            isUpvoted: type === "up",
-        });
+        return await db.insert(vote).values(inputData);
     } catch (_error) {
         throw APIError.badRequest("Failed to vote message");
     }
