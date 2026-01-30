@@ -2,9 +2,15 @@ import "server-only";
 
 import db from "@/lib/db";
 import APIError from "@/lib/api/error";
-import { and, asc, count, desc, eq, gt, gte, inArray, lt, type SQL } from "drizzle-orm";
-import { type Chat, chat, type DBMessage, message, stream, vote } from "@/lib/db/schemas";
+import { TITLE_PROMPT } from "@/lib/ai/prompts";
+import { getTextFromMessage } from "@/lib/utils";
+import { generateText, LanguageModel, type UIMessage } from "ai";
+import { DEFAULT_MODELS } from "@/lib/ai/models";
 import type { GetChatsByUserId, VisibilityType, VoteMessageInput } from "./schema";
+import { and, asc, count, desc, eq, gt, gte, inArray, lt, type SQL } from "drizzle-orm";
+import { type Chat, chat, type DBMessage, message, organization, organizationModel, stream, vote } from "@/lib/db/schemas";
+
+const DAILY_MESSAGE_LIMIT = 30;
 
 export async function saveChat({
     id,
@@ -339,4 +345,56 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
     } catch (_error) {
         throw APIError.badRequest("Failed to get stream ids by chat id");
     }
+}
+
+export async function getOrganizationModelInfo({ organizationId }: { organizationId?: string }) {
+    if (!organizationId) {
+        return {
+            messageLimit: DAILY_MESSAGE_LIMIT,
+            chatModels: DEFAULT_MODELS,
+        };
+    }
+    try {
+        const [org] = await db.select({
+            dailyLimit: organization.userDailyLimit,
+        }).from(organization).where(eq(organization.id, organizationId)).limit(1);
+
+        const models = await db.select().from(organizationModel).where(
+            and(
+                eq(organizationModel.organizationId, organizationId),
+            )
+        );
+
+        return {
+            messageLimit: org?.dailyLimit || DAILY_MESSAGE_LIMIT,
+            chatModels: models.length > 0 ? models : DEFAULT_MODELS,
+        };
+
+
+    } catch (_error) {
+        console.error("Failed to get organization model info");
+
+        return {
+            messageLimit: DAILY_MESSAGE_LIMIT,
+            chatModels: DEFAULT_MODELS,
+        };
+    }
+}
+
+export async function generateTitleFromUserMessage({
+    message,
+    chatModel
+}: {
+    message: UIMessage;
+    chatModel: LanguageModel
+}) {
+    const { text } = await generateText({
+        model: chatModel,
+        system: TITLE_PROMPT,
+        prompt: getTextFromMessage(message),
+    });
+    return text
+        .replace(/^[#*"\s]+/, "")
+        .replace(/["]+$/, "")
+        .trim();
 }

@@ -7,6 +7,22 @@ import { createSelectSchema } from "drizzle-zod";
 const ChatSelectSchema = createSelectSchema(chat);
 const VoteSelectSchema = createSelectSchema(vote);
 
+const MessageSchema = z.object({
+    id: z.string(),
+    role: z.string(),
+    parts: z.array(z.any()),
+});;
+
+export const ChatStreamSchema = z.object({
+    id: z.string(),
+    message: MessageSchema.extend({
+        role: z.enum(["user"])
+    }).optional(),
+    messages: z.array(MessageSchema).optional(), // For Tools
+    selectedChatModel: z.string(),
+    selectedVisibilityType: ChatSelectSchema.shape.visibility,
+})
+
 export const GetChatsHistorySchema = {
     query: z.object({
         limit: z.coerce.number().int().min(1).max(100).default(10),
@@ -29,6 +45,7 @@ export const VoteMessageSchema = {
 
 
 export type Chat = z.infer<typeof ChatSelectSchema>;
+export type ChatStream = z.infer<typeof ChatStreamSchema>;
 export type GetChatsByUserId = z.infer<typeof GetChatsHistorySchema.query> & { id: string };
 export type VoteMessageInput = z.infer<typeof VoteMessageSchema.body>;
 export type VisibilityType = z.infer<typeof ChatSelectSchema.shape.visibility>;
