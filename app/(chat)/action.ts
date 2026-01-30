@@ -4,9 +4,7 @@ import db from "@/lib/db";
 import APIError from "@/lib/api/error";
 import { and, asc, count, desc, eq, gt, gte, inArray, lt, type SQL } from "drizzle-orm";
 import { type Chat, chat, type DBMessage, message, stream, vote } from "@/lib/db/schemas";
-import type { GetChatsByUserId, VoteMessageInput } from "./schema";
-
-type VisibilityType = "public" | "private"
+import type { GetChatsByUserId, VisibilityType, VoteMessageInput } from "./schema";
 
 export async function saveChat({
     id,
