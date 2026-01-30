@@ -1,7 +1,6 @@
 "use client"
 
 import React, {
-    ComponentPropsWithoutRef,
     useEffect,
     useMemo,
     useState,
@@ -25,28 +24,31 @@ export function AnimatedListItem({ children }: { children: React.ReactNode }) {
     )
 }
 
-export interface AnimatedListProps extends ComponentPropsWithoutRef<"div"> {
+export interface AnimatedListProps {
     children: React.ReactNode
     delay?: number
+    className?: string
 }
 
 export const AnimatedList = React.memo(
-    ({ children, className, delay = 1000, ...props }: AnimatedListProps) => {
+    ({ children, className, delay = 1000 }: AnimatedListProps) => {
         const [index, setIndex] = useState(0)
+        const [isInView, setIsInView] = useState(false)
+
         const childrenArray = useMemo(
             () => React.Children.toArray(children),
             [children]
         )
 
         useEffect(() => {
-            if (index < childrenArray.length - 1) {
+            if (isInView && index < childrenArray.length - 1) {
                 const timeout = setTimeout(() => {
                     setIndex((prevIndex) => (prevIndex + 1) % childrenArray.length)
                 }, delay)
 
                 return () => clearTimeout(timeout)
             }
-        }, [index, delay, childrenArray.length])
+        }, [index, delay, childrenArray.length, isInView])
 
         const itemsToShow = useMemo(() => {
             const result = childrenArray.slice(0, index + 1).reverse()
@@ -54,9 +56,12 @@ export const AnimatedList = React.memo(
         }, [index, childrenArray])
 
         return (
-            <div
+            <motion.div
                 className={cn(`flex flex-col items-center gap-4`, className)}
-                {...props}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                onViewportEnter={() => setIsInView(true)}
+                viewport={{ once: true, margin: "-100px" }}
             >
                 <AnimatePresence>
                     {itemsToShow.map((item) => (
@@ -65,7 +70,7 @@ export const AnimatedList = React.memo(
                         </AnimatedListItem>
                     ))}
                 </AnimatePresence>
-            </div>
+            </motion.div>
         )
     }
 )
