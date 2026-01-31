@@ -348,7 +348,7 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
 }
 
 export async function getOrganizationModelInfo({ organizationId }: { organizationId?: string }) {
-    if (!organizationId) {
+    if (!organizationId || organizationId == "app") {
         return {
             messageLimit: DAILY_MESSAGE_LIMIT,
             chatModels: DEFAULT_MODELS,

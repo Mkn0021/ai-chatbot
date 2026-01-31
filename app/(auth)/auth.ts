@@ -32,7 +32,7 @@ export const auth = betterAuth({
             },
             organizationId: {
                 type: "string",
-                required: false,
+                defaultValue: "app"
             },
         },
     },

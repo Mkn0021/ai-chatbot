@@ -10,7 +10,7 @@ export const authClient = createAuthClient({
             },
             organizationId: {
                 type: "string",
-                required: false,
+                defaultValue: "app"
             },
         }
     })],
