@@ -1,6 +1,6 @@
 import Script from "next/script";
 import { Suspense } from "react";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { auth } from "@/app/(auth)/auth";
 import { User } from "@/app/(user)/schema";
 import { AppSidebar } from "@/components/chatpage/sidebar/app-sidebar";
@@ -24,7 +24,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 }
 
 async function SidebarWrapper({ children }: { children: React.ReactNode }) {
-    const [session, cookieStore] = await Promise.all([auth.api.getSession(), cookies()]);
+    const [session, cookieStore] = await Promise.all([auth.api.getSession({ headers: await headers() }), cookies()]);
     const isCollapsed = cookieStore.get("sidebar_state")?.value !== "true";
 
     return (
