@@ -39,6 +39,12 @@ export const ChatIdQuerySchema = {
     })
 };
 
+export const MessageIdQuerySchema = {
+    query: z.object({
+        messageId: z.string().min(1)
+    })
+};
+
 export const UpdateChatVisibilitySchema = {
     body: ChatSelectSchema.pick({
         id: true,
