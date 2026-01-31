@@ -46,3 +46,7 @@ export function getTextFromMessage(message: ChatMessage | UIMessage): string {
     .map((part) => (part as { type: 'text'; text: string }).text)
     .join('');
 }
+
+export function sanitizeText(text: string) {
+  return text.replace('<has_function_call>', '');
+}
