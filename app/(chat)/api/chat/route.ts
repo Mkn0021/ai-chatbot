@@ -53,7 +53,7 @@ export async function POST(req: Request) {
         })
 
         if (messageCount > messageLimit) {
-            return APIError.forbidden("You hit the rate limit, try again after 24hr");
+            throw APIError.forbidden("You hit the rate limit, try again after 24hr");
         }
 
         if (!chatModels.some(model => model.id === input.selectedChatModel)) {
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
 
         if (chat) {
             if (chat.userId !== session.user.id) {
-                return APIError.forbidden("You're not allowed to access the chat");
+                throw APIError.forbidden("You're not allowed to access the chat");
             }
             if (!isToolApprovalFlow) {
                 messagesFromDb = await getMessagesByChatId({ id: input.id });
@@ -196,7 +196,7 @@ export async function POST(req: Request) {
             },
         });
     } catch (error) {
-        errorHandler(error)
+        return errorHandler(error)
     }
 }
 
