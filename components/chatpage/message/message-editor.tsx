@@ -10,7 +10,7 @@ import {
   useState,
 } from "react";
 import type { ChatMessage } from "@/types";
-import { fetchWithErrorHandlers, getTextFromMessage } from "@/lib/utils";
+import { fetcher, getTextFromMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -55,7 +55,7 @@ export function MessageEditor({
   const handleDeleteMessage = async () => {
     setIsSubmitting(true);
 
-    await fetchWithErrorHandlers(
+    await fetcher(
       `/api/chat/message/trailing?id=${message.id}`, {
       method: "DELETE",
     });

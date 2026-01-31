@@ -1,5 +1,6 @@
 "use client";
 
+import useSWR from "swr";
 import type { UseChatHelpers } from "@ai-sdk/react";
 import type { UIMessage } from "ai";
 import equal from "fast-deep-equal";
@@ -29,7 +30,7 @@ import {
   ModelSelectorTrigger,
 } from "@/components/ai-element/model-selector";
 import type { Attachment, ChatMessage } from "@/types";
-import { cn, fetchWithErrorHandlers } from "@/lib/utils";
+import { cn, fetcher } from "@/lib/utils";
 import {
   PromptInput,
   PromptInputSubmit,
@@ -463,16 +464,12 @@ function PureModelSelectorCompact({
   onModelChange?: (modelId: string) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [models, setModels] = useState<ChatModel[]>([]);
 
-  useEffect(() => {
-    fetchWithErrorHandlers("/api/models")
-      .then((res) => res.json())
-      .then((data: ChatModel[]) => setModels(data))
-      .catch(() => {
-        toast.error("Failed to load models");
-      });
-  }, []);
+  const {
+    data: models = [],
+    isLoading,
+    error,
+  } = useSWR<ChatModel[]>("/api/model", fetcher);
 
   const modelsByProvider = useMemo(() => {
     const grouped: Record<string, ChatModel[]> = {};
@@ -485,14 +482,32 @@ function PureModelSelectorCompact({
     return grouped;
   }, [models]);
 
-  const selectedModel = models.find((m) => m.id === selectedModelId) ?? models[0];
-  const [provider] = selectedModel.provider;
+  if (isLoading) {
+    return (
+      <Button className="h-8 w-[200px]" variant="ghost" disabled>
+        Loading models…
+      </Button>
+    );
+  }
+
+  if (error || models.length === 0) {
+    return (
+      <Button className="h-8 w-[200px]" variant="ghost" disabled>
+        No models available
+      </Button>
+    );
+  }
+
+  const selectedModel =
+    models.find((m) => m.id === selectedModelId) ?? models[0];
+
+  const provider = selectedModel.provider;
 
   return (
     <ModelSelector onOpenChange={setOpen} open={open}>
       <ModelSelectorTrigger asChild>
         <Button className="h-8 w-[200px] justify-between px-2" variant="ghost">
-          {provider && <ModelSelectorLogo provider={provider} />}
+          <ModelSelectorLogo provider={provider} />
           <ModelSelectorName>{selectedModel.name}</ModelSelectorName>
         </Button>
       </ModelSelectorTrigger>
@@ -501,30 +516,24 @@ function PureModelSelectorCompact({
         <ModelSelectorList>
           {Object.entries(modelsByProvider).map(
             ([providerKey, providerModels]) => (
-              <ModelSelectorGroup
-                heading={providerKey}
-                key={providerKey}
-              >
-                {providerModels.map((model) => {
-                  const logoProvider = model.provider;
-                  return (
-                    <ModelSelectorItem
-                      key={model.id}
-                      onSelect={() => {
-                        onModelChange?.(model.id);
-                        setCookie("chat-model", model.id);
-                        setOpen(false);
-                      }}
-                      value={model.id}
-                    >
-                      <ModelSelectorLogo provider={logoProvider} />
-                      <ModelSelectorName>{model.name}</ModelSelectorName>
-                      {model.id === selectedModel.id && (
-                        <CheckIcon className="ml-auto size-4" />
-                      )}
-                    </ModelSelectorItem>
-                  );
-                })}
+              <ModelSelectorGroup heading={providerKey} key={providerKey}>
+                {providerModels.map((model) => (
+                  <ModelSelectorItem
+                    key={model.id}
+                    value={model.id}
+                    onSelect={() => {
+                      onModelChange?.(model.id);
+                      setCookie("chat-model", model.id);
+                      setOpen(false);
+                    }}
+                  >
+                    <ModelSelectorLogo provider={model.provider} />
+                    <ModelSelectorName>{model.name}</ModelSelectorName>
+                    {model.id === selectedModel.id && (
+                      <CheckIcon className="ml-auto size-4" />
+                    )}
+                  </ModelSelectorItem>
+                ))}
               </ModelSelectorGroup>
             )
           )}
