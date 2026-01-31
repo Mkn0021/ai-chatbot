@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 import {
-    CheckCircle,
+    CheckCircle2,
     ChevronDown,
     Globe,
     Lock,
@@ -100,7 +100,7 @@ export function VisibilitySelector({
                             )}
                         </div>
                         <div className="text-foreground opacity-0 group-data-[active=true]/item:opacity-100 dark:text-foreground">
-                            <CheckCircle />
+                            <CheckCircle2 />
                         </div>
                     </DropdownMenuItem>
                 ))}

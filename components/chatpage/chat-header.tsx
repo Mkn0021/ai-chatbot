@@ -26,21 +26,22 @@ function PureChatHeader({
 
   return (
     <header className="absolute top-0 left-0 right-0 z-10 flex justify-between items-center gap-2 px-2 py-6 md:px-2 bg-linear-to-b from-white to-transparent dark:from-black dark:to-transparent">
-      <SidebarToggle />
-
-      {(!open || windowWidth < 768) && (
-        <Button
-          className="order-2 ml-auto h-8 px-2 md:order-1 md:ml-0 md:h-fit md:px-2"
-          onClick={() => {
-            router.push("/chat");
-            router.refresh();
-          }}
-          variant="outline"
-        >
-          <Plus />
-          <span className="md:sr-only">New Chat</span>
-        </Button>
-      )}
+      <div>
+        <SidebarToggle className="mr-2" />
+        {(!open || windowWidth < 768) && (
+          <Button
+            className="order-2 ml-auto h-8 px-2 md:order-1 md:ml-0 md:h-fit md:px-2"
+            onClick={() => {
+              router.push("/chat");
+              router.refresh();
+            }}
+            variant="outline"
+          >
+            <Plus />
+            <span className="md:sr-only">New Chat</span>
+          </Button>
+        )}
+      </div>
 
       {!isReadonly && (
         <VisibilitySelector
