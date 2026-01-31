@@ -10,15 +10,20 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export const fetcher = async (url: string) => {
-  const response = await fetch(url);
+export const fetcher = async (
+  input: RequestInfo | URL,
+  init?: RequestInit,
+) => {
+  const response = await fetch(input, init);
 
   if (!response.ok) {
     const { code, cause } = await response.json();
     throw new APIError(cause, response.status, { code });
   }
 
-  return response.json();
+  // AsyncHandler by Default return data : { data: T , message: string }
+  const json = await response.json()
+  return json.data;
 };
 
 export async function fetchWithErrorHandlers(
