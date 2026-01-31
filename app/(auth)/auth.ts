@@ -1,6 +1,5 @@
 import db from "@/lib/db";
 import { env } from "@/lib/env";
-import { headers } from "next/headers";
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
@@ -38,10 +37,3 @@ export const auth = betterAuth({
         },
     },
 });
-
-// Helper function to get session in server components/API routes
-export async function getSession() {
-    return await auth.api.getSession({
-        headers: await headers(),
-    });
-}
