@@ -1,6 +1,6 @@
 import { asyncHandler } from "@/lib/api/response";
 import { GetChatsHistorySchema } from "@/app/(chat)/schema";
-import { deleteAllChatsByUserId, getChatsByUserId } from "@/app/(chat)/action";
+import { deleteAllChatsByUserId, getChatsByUserId } from "@/app/(chat)/actions";
 
 // GET - api/history
 export const GET = asyncHandler(

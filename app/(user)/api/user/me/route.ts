@@ -2,7 +2,7 @@ import APIError from '@/lib/api/error';
 import { auth } from '@/app/(auth)/auth';
 import { asyncHandler } from '@/lib/api/response';
 import { UpdateMeSchema } from '@/app/(user)/schema';
-import { deleteUserById, getUserById, updateUser } from '@/app/(user)/action';
+import { deleteUserById, getUserById, updateUser } from '@/app/(user)/actions';
 
 
 // GET - api/user/me

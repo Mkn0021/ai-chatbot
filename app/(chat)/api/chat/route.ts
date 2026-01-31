@@ -27,7 +27,7 @@ import {
     saveMessages,
     updateChatTitleById,
     updateMessage
-} from "@/app/(chat)/action";
+} from "@/app/(chat)/actions";
 import { ChatMessage } from "@/types";
 import { convertToUIMessages, generateUUID } from "@/lib/utils";
 

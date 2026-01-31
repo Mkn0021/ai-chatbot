@@ -1,7 +1,7 @@
 import APIError from "@/lib/api/error";
 import { asyncHandler } from "@/lib/api/response";
 import { ChatIdQuerySchema, VoteMessageSchema } from "@/app/(chat)/schema";
-import { getChatById, getVotesByChatId, voteMessage } from "@/app/(chat)/action";
+import { getChatById, getVotesByChatId, voteMessage } from "@/app/(chat)/actions";
 
 // GET - api/vote
 export const GET = asyncHandler(
