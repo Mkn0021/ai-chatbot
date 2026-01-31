@@ -1,6 +1,5 @@
 import { relations } from "drizzle-orm";
-import { organization } from "./organization";
-import { pgTable, text, timestamp, boolean, index, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -8,19 +7,13 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
-
-  // custom field
-  role: varchar("role", { enum: ["user", "admin"] }).notNull().default("user"),
-  organizationId: text("organization_id")
-    .references(() => organization.id, {
-      onDelete: "set null"
-    }),
-
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
+  role: text("role").default("user").notNull(),
+  organizationId: text("organization_id").default("app").notNull(),
 });
 
 export const session = pgTable(
