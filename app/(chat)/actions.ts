@@ -6,7 +6,7 @@ import { TITLE_PROMPT } from "@/lib/ai/prompts";
 import { getTextFromMessage } from "@/lib/utils";
 import { generateText, LanguageModel, type UIMessage } from "ai";
 import { DEFAULT_MODELS } from "@/lib/ai/models";
-import type { GetChatsByUserId, VisibilityType, VoteMessageInput } from "./schema";
+import type { GetChatsByUserId, UpdateChatVisibilityInput, VisibilityType, VoteMessageInput } from "./schema";
 import { and, asc, count, desc, eq, gt, gte, inArray, lt, type SQL } from "drizzle-orm";
 import { type Chat, chat, type DBMessage, message, organization, organizationModel, stream, vote } from "@/lib/db/schemas";
 
@@ -256,15 +256,12 @@ export async function deleteMessagesByChatIdAfterTimestamp({
     }
 }
 
-export async function updateChatVisibilityById({
-    chatId,
-    visibility,
-}: {
-    chatId: string;
-    visibility: VisibilityType;
-}) {
+export async function updateChatVisibilityById(input: UpdateChatVisibilityInput) {
     try {
-        return await db.update(chat).set({ visibility }).where(eq(chat.id, chatId));
+        return await db.update(chat).set({
+            visibility: input.visibility
+        }).where(eq(chat.id, input.id));
+
     } catch (_error) {
         throw APIError.badRequest("Failed to update chat visibility by id");
     }

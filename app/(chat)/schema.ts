@@ -39,6 +39,13 @@ export const ChatIdQuerySchema = {
     })
 };
 
+export const UpdateChatVisibilitySchema = {
+    body: ChatSelectSchema.pick({
+        id: true,
+        visibility: true
+    })
+}
+
 export const VoteMessageSchema = {
     body: VoteSelectSchema
 }
@@ -48,4 +55,5 @@ export type Chat = z.infer<typeof ChatSelectSchema>;
 export type ChatStream = z.infer<typeof ChatStreamSchema>;
 export type GetChatsByUserId = z.infer<typeof GetChatsHistorySchema.query> & { id: string };
 export type VoteMessageInput = z.infer<typeof VoteMessageSchema.body>;
+export type UpdateChatVisibilityInput = z.infer<typeof UpdateChatVisibilitySchema.body>;
 export type VisibilityType = z.infer<typeof ChatSelectSchema.shape.visibility>;
