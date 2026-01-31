@@ -21,6 +21,28 @@ export const fetcher = async (url: string) => {
   return response.json();
 };
 
+export async function fetchWithErrorHandlers(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+) {
+  try {
+    const response = await fetch(input, init);
+
+    if (!response.ok) {
+      const { code, cause } = await response.json();
+      throw new APIError(cause, response.status, { code });
+    }
+
+    return response;
+  } catch (error: unknown) {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      throw new APIError('You appear to be offline', 0);
+    }
+
+    throw error;
+  }
+}
+
 export function generateUUID(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
