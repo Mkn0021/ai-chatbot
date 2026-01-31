@@ -1,3 +1,4 @@
+import APIError from './api/error';
 import { formatISO } from 'date-fns';
 import { twMerge } from "tailwind-merge"
 import { DBMessage } from "./db/schemas";
@@ -8,6 +9,17 @@ import type { ChatMessage, ChatTools, CustomUIDataTypes } from '@/types';
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+export const fetcher = async (url: string) => {
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    const { code, cause } = await response.json();
+    throw new APIError(cause, response.status, { code });
+  }
+
+  return response.json();
+};
 
 export function generateUUID(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
