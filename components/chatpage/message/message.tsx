@@ -119,9 +119,9 @@ const PurePreviewMessage = ({
                                     <div key={key}>
                                         <MessageContent
                                             className={cn({
-                                                "wrap-break-word w-fit rounded-2xl px-3 py-2 text-right text-white":
+                                                "wrap-break-word w-fit rounded-[10px_0px_10px_10px] border border-[#E3E3E3] bg-linear-to-br from-[#FFA756] to-[#EE602C] px-3 py-2 text-right text-white shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.10),0px_4px_6px_-4px_rgba(0,0,0,0.10)]":
                                                     message.role === "user",
-                                                "bg-transparent px-0 py-0 text-left":
+                                                "bg-transparent px-0 py-0 text-left selection:bg-orange-200":
                                                     message.role === "assistant",
                                             })}
                                             data-testid="message-content"
