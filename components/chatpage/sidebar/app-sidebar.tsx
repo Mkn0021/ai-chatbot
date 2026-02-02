@@ -6,7 +6,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash } from "lucide-react";
 import { User } from "@/app/(user)/schema";
 import {
     getChatHistoryPaginationKey,
@@ -75,7 +75,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                                                 type="button"
                                                 variant="ghost"
                                             >
-                                                <Trash2 />
+                                                <Trash />
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent align="end" className="hidden md:block">
@@ -126,7 +126,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteAll}>
+                        <AlertDialogAction onClick={handleDeleteAll} variant={"secondary"}>
                             Delete All
                         </AlertDialogAction>
                     </AlertDialogFooter>

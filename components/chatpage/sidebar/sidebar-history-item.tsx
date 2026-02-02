@@ -8,7 +8,7 @@ import {
     Lock,
     MoreHorizontal,
     Share2,
-    Trash2,
+    Trash,
 } from "lucide-react";
 import {
     DropdownMenu,
@@ -103,7 +103,7 @@ const PureChatItem = ({
                         className="cursor-pointer text-destructive focus:bg-destructive/15 focus:text-destructive dark:text-red-500"
                         onSelect={() => onDelete(chat.id)}
                     >
-                        <Trash2 />
+                        <Trash />
                         <span>Delete</span>
                     </DropdownMenuItem>
                 </DropdownMenuContent>
