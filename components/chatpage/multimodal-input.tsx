@@ -440,7 +440,7 @@ function PureAttachmentsButton({
 
   return (
     <Button
-      className="aspect-square h-8 rounded-lg p-1 transition-colors hover:bg-primary/20"
+      className="aspect-square h-8 rounded-lg p-1 transition-colors hover:bg-accent"
       data-testid="attachments-button"
       disabled={status !== "ready" || isReasoningModel}
       onClick={(event) => {
@@ -513,6 +513,7 @@ function PureModelSelectorCompact({
       </ModelSelectorTrigger>
       <ModelSelectorContent>
         <ModelSelectorInput placeholder="Search models..." />
+        <div className="h-px bg-neutral-300 w-full mt-1 mask-x-from-60%"/>
         <ModelSelectorList>
           {Object.entries(modelsByProvider).map(
             ([providerKey, providerModels]) => (
