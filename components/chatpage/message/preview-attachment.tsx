@@ -1,7 +1,8 @@
 import Image from "next/image";
 import type { Attachment } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Loader2, X as CrossSmallIcon } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
+import { X as CrossSmallIcon } from "lucide-react";
 
 export const PreviewAttachment = ({
   attachment,
@@ -38,9 +39,7 @@ export const PreviewAttachment = ({
           className="absolute inset-0 flex items-center justify-center bg-black/50"
           data-testid="input-attachment-loader"
         >
-          <div className="animate-spin">
-            <Loader2 />
-          </div>
+          <Spinner />
         </div>
       )}
 

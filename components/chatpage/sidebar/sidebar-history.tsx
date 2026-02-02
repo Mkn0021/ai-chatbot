@@ -23,10 +23,10 @@ import {
     useSidebar,
 } from "@/components/ui/sidebar";
 import { fetcher } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
 import type { Chat } from "@/lib/db/schemas";
 import type { User } from "@/app/(user)/schema";
 import { ChatItem } from "./sidebar-history-item";
+import { Spinner } from "@/components/ui/spinner";
 
 type GroupedChats = {
     today: Chat[];
@@ -345,9 +345,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                         </div>
                     ) : (
                         <div className="mt-8 flex flex-row items-center gap-2 p-2 text-zinc-500 dark:text-zinc-400">
-                            <div className="animate-spin">
-                                <Loader2 />
-                            </div>
+                            <Spinner />
                             <div>Loading Chats...</div>
                         </div>
                     )}
