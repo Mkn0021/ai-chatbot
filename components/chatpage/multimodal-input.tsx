@@ -394,7 +394,7 @@ function PureMultimodalInput({
               disabled={!input.trim() || uploadQueue.length > 0}
               status={status}
             >
-              <ArrowUp size={14} />
+              <ArrowUp size={14} color="white" />
             </PromptInputSubmit>
           )}
         </PromptInputToolbar>

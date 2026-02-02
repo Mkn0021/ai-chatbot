@@ -174,6 +174,7 @@ export const PromptInputSubmit = ({
     <Button
       className={cn("gap-1.5 rounded-lg", className)}
       size={size}
+      variant={"default"}
       type="submit"
       {...props}
     >
