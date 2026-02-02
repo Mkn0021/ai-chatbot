@@ -48,14 +48,14 @@ export function SidebarUserNav({ user }: { user: User }) {
                                 data-testid="user-nav-button"
                             >
                                 <Image
-                                    alt={user.email ?? "User Avatar"}
+                                    alt={user.name ?? "User Avatar"}
                                     className="rounded-full"
                                     height={24}
                                     src={user.image!}
                                     width={24}
                                 />
-                                <span className="truncate" data-testid="user-email">
-                                    {user?.email}
+                                <span className="truncate" data-testid="user-name">
+                                    {user?.name}
                                 </span>
                                 <ChevronUp className="ml-auto" />
                             </SidebarMenuButton>

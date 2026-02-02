@@ -3,7 +3,6 @@ import { memo } from "react";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import type { Chat } from "@/lib/db/schemas";
 import {
-    CheckCircle2,
     Globe,
     Lock,
     MoreHorizontal,
@@ -25,6 +24,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { Icons } from "@/components/ui/icons";
 
 const PureChatItem = ({
     chat,
@@ -80,7 +80,7 @@ const PureChatItem = ({
                                         <span>Private</span>
                                     </div>
                                     {visibilityType === "private" ? (
-                                        <CheckCircle2 />
+                                        <Icons.checkFilled />
                                     ) : null}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
@@ -93,7 +93,7 @@ const PureChatItem = ({
                                         <Globe />
                                         <span>Public</span>
                                     </div>
-                                    {visibilityType === "public" ? <CheckCircle2 /> : null}
+                                    {visibilityType === "public" ? <Icons.checkFilled /> : null}
                                 </DropdownMenuItem>
                             </DropdownMenuSubContent>
                         </DropdownMenuPortal>
