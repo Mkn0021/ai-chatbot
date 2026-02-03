@@ -5,36 +5,35 @@ import { Suggestion } from "@/lib/db/schemas";
 export type DataPart = { type: "append-message"; message: string };
 
 export const messageMetadataSchema = z.object({
-    createdAt: z.string(),
+	createdAt: z.string(),
 });
 
 export type MessageMetadata = z.infer<typeof messageMetadataSchema>;
 
-
 export type ChatTools = {};
 
 export type CustomUIDataTypes = {
-    textDelta: string;
-    imageDelta: string;
-    sheetDelta: string;
-    codeDelta: string;
-    suggestion: Suggestion;
-    appendMessage: string;
-    id: string;
-    title: string;
-    clear: null;
-    finish: null;
-    "chat-title": string;
+	textDelta: string;
+	imageDelta: string;
+	sheetDelta: string;
+	codeDelta: string;
+	suggestion: Suggestion;
+	appendMessage: string;
+	id: string;
+	title: string;
+	clear: null;
+	finish: null;
+	"chat-title": string;
 };
 
 export type ChatMessage = UIMessage<
-    MessageMetadata,
-    CustomUIDataTypes,
-    ChatTools
+	MessageMetadata,
+	CustomUIDataTypes,
+	ChatTools
 >;
 
 export type Attachment = {
-    name: string;
-    url: string;
-    contentType: string;
+	name: string;
+	url: string;
+	contentType: string;
 };

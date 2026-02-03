@@ -1,7 +1,7 @@
 import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { PanelLeft } from "lucide-react";
@@ -10,25 +10,25 @@ import { Button } from "@/components/ui/button";
 import { type SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 
 export function SidebarToggle({
-    className,
+	className,
 }: ComponentProps<typeof SidebarTrigger>) {
-    const { toggleSidebar } = useSidebar();
+	const { toggleSidebar } = useSidebar();
 
-    return (
-        <Tooltip>
-            <TooltipTrigger asChild>
-                <Button
-                    className={cn("h-8 px-2 md:h-fit md:px-2", className)}
-                    data-testid="sidebar-toggle-button"
-                    onClick={toggleSidebar}
-                    variant="outline"
-                >
-                    <PanelLeft size={16} />
-                </Button>
-            </TooltipTrigger>
-            <TooltipContent align="start" className="hidden md:block">
-                Toggle Sidebar
-            </TooltipContent>
-        </Tooltip>
-    );
+	return (
+		<Tooltip>
+			<TooltipTrigger asChild>
+				<Button
+					className={cn("h-8 px-2 md:h-fit md:px-2", className)}
+					data-testid="sidebar-toggle-button"
+					onClick={toggleSidebar}
+					variant="outline"
+				>
+					<PanelLeft size={16} />
+				</Button>
+			</TooltipTrigger>
+			<TooltipContent align="start" className="hidden md:block">
+				Toggle Sidebar
+			</TooltipContent>
+		</Tooltip>
+	);
 }

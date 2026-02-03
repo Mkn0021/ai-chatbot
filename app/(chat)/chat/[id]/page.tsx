@@ -10,56 +10,56 @@ import { getChatById, getMessagesByChatId } from "@/app/(chat)/actions";
 import { DataStreamHandler } from "@/components/chatpage/data-stream-handler";
 
 export default function Page(props: { params: Promise<{ id: string }> }) {
-    return (
-        <Suspense fallback={<div className="flex h-dvh" />}>
-            <ChatPage params={props.params} />
-        </Suspense>
-    );
+	return (
+		<Suspense fallback={<div className="flex h-dvh" />}>
+			<ChatPage params={props.params} />
+		</Suspense>
+	);
 }
 
 async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = await params;
-    const chat = await getChatById({ id });
+	const { id } = await params;
+	const chat = await getChatById({ id });
 
-    if (!chat) {
-        redirect("/");
-    }
+	if (!chat) {
+		redirect("/");
+	}
 
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+	const session = await auth.api.getSession({
+		headers: await headers(),
+	});
 
-    if (chat.visibility === "private") {
-        if (!session || !session.user) {
-            return notFound();
-        }
+	if (chat.visibility === "private") {
+		if (!session || !session.user) {
+			return notFound();
+		}
 
-        if (session.user.id !== chat.userId) {
-            return notFound();
-        }
-    }
+		if (session.user.id !== chat.userId) {
+			return notFound();
+		}
+	}
 
-    const messagesFromDb = await getMessagesByChatId({ id });
-    
-    const uiMessages = convertToUIMessages(messagesFromDb);
+	const messagesFromDb = await getMessagesByChatId({ id });
 
-    const cookieStore = await cookies();
+	const uiMessages = convertToUIMessages(messagesFromDb);
 
-    // Get model from cookie or default
-    const modelCookie = cookieStore.get("chat-model");
-    const initialModel = modelCookie?.value ?? DEFAULT_MODELS[0].id
+	const cookieStore = await cookies();
 
-    return (
-        <>
-            <Chat
-                autoResume={true}
-                id={chat.id}
-                initialChatModel={initialModel}
-                initialMessages={uiMessages}
-                initialVisibilityType={chat.visibility}
-                isReadonly={session?.user?.id !== chat.userId}
-            />
-            <DataStreamHandler />
-        </>
-    );
+	// Get model from cookie or default
+	const modelCookie = cookieStore.get("chat-model");
+	const initialModel = modelCookie?.value ?? DEFAULT_MODELS[0].id;
+
+	return (
+		<>
+			<Chat
+				autoResume={true}
+				id={chat.id}
+				initialChatModel={initialModel}
+				initialMessages={uiMessages}
+				initialVisibilityType={chat.visibility}
+				isReadonly={session?.user?.id !== chat.userId}
+			/>
+			<DataStreamHandler />
+		</>
+	);
 }

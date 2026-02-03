@@ -1,5 +1,6 @@
 //TODO: Fetch from organizations table from database
-export const SYSTEM_PROMPT = 'Youre a Friendly ai assistant to help with database query'
+export const SYSTEM_PROMPT =
+	"Youre a Friendly ai assistant to help with database query";
 
 export const TITLE_PROMPT = `Generate a short chat title (2-5 words) summarizing the user's message.
 

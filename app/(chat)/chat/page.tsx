@@ -6,33 +6,33 @@ import { Chat } from "@/components/chatpage/chat";
 import { DataStreamHandler } from "@/components/chatpage/data-stream-handler";
 
 export default function Page() {
-    return (
-        <Suspense fallback={<div className="flex h-dvh" />}>
-            <NewChatPage />
-        </Suspense>
-    );
+	return (
+		<Suspense fallback={<div className="flex h-dvh" />}>
+			<NewChatPage />
+		</Suspense>
+	);
 }
 
 async function NewChatPage() {
-    const id = generateUUID();
-    const cookieStore = await cookies();
+	const id = generateUUID();
+	const cookieStore = await cookies();
 
-    // Get model from cookie or default
-    const modelCookie = cookieStore.get("chat-model");
-    const initialModel = modelCookie?.value ?? DEFAULT_MODELS[0].id
+	// Get model from cookie or default
+	const modelCookie = cookieStore.get("chat-model");
+	const initialModel = modelCookie?.value ?? DEFAULT_MODELS[0].id;
 
-    return (
-        <>
-            <Chat
-                autoResume={false}
-                id={id}
-                initialChatModel={initialModel}
-                initialMessages={[]}
-                initialVisibilityType="private"
-                isReadonly={false}
-                key={id}
-            />
-            <DataStreamHandler />
-        </>
-    );
+	return (
+		<>
+			<Chat
+				autoResume={false}
+				id={id}
+				initialChatModel={initialModel}
+				initialMessages={[]}
+				initialVisibilityType="private"
+				isReadonly={false}
+				key={id}
+			/>
+			<DataStreamHandler />
+		</>
+	);
 }

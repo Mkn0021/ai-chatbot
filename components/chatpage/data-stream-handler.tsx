@@ -7,27 +7,27 @@ import { useDataStream } from "./data-stream-provider";
 import { getChatHistoryPaginationKey } from "./sidebar/sidebar-history";
 
 export function DataStreamHandler() {
-    const { dataStream, setDataStream } = useDataStream();
-    const { mutate } = useSWRConfig();
+	const { dataStream, setDataStream } = useDataStream();
+	const { mutate } = useSWRConfig();
 
-    useEffect(() => {
-        if (!dataStream?.length) {
-            return;
-        }
+	useEffect(() => {
+		if (!dataStream?.length) {
+			return;
+		}
 
-        const newDeltas = dataStream.slice();
-        setDataStream([]);
+		const newDeltas = dataStream.slice();
+		setDataStream([]);
 
-        for (const delta of newDeltas) {
-            // Handle chat title updates
-            if (delta.type === "data-chat-title") {
-                mutate(unstable_serialize(getChatHistoryPaginationKey));
-                continue;
-            }
+		for (const delta of newDeltas) {
+			// Handle chat title updates
+			if (delta.type === "data-chat-title") {
+				mutate(unstable_serialize(getChatHistoryPaginationKey));
+				continue;
+			}
 
-            //TODO: handle more types here 
-        }
-    }, [dataStream, setDataStream, mutate]);
+			//TODO: handle more types here
+		}
+	}, [dataStream, setDataStream, mutate]);
 
-    return null;
+	return null;
 }
