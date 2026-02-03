@@ -389,13 +389,11 @@ function PureMultimodalInput({
             <StopButton setMessages={setMessages} stop={stop} />
           ) : (
             <PromptInputSubmit
-              className="size-8 rounded-full bg-primary text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
+              className="size-8 rounded-full"
               data-testid="send-button"
               disabled={!input.trim() || uploadQueue.length > 0}
               status={status}
-            >
-              <ArrowUp size={14} color="white" />
-            </PromptInputSubmit>
+            />
           )}
         </PromptInputToolbar>
       </PromptInput>
@@ -513,7 +511,7 @@ function PureModelSelectorCompact({
       </ModelSelectorTrigger>
       <ModelSelectorContent>
         <ModelSelectorInput placeholder="Search models..." />
-        <div className="h-px bg-neutral-300 w-full mt-1 mask-x-from-60%"/>
+        <div className="h-px bg-neutral-300 w-full mt-1 mask-x-from-60%" />
         <ModelSelectorList>
           {Object.entries(modelsByProvider).map(
             ([providerKey, providerModels]) => (
