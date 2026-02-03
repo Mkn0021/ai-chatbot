@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Suspense } from 'react';
 import { Logo } from '@/components/ui/logo';
+import { Spinner } from '@/components/ui/spinner';
 import AuthForm from "@/components/loginpage/auth-form";
 import { SectionHeader, SectionSubHeader } from '@/components/ui/section-header';
 
@@ -35,7 +36,7 @@ export default function Login() {
                 </div>
                 <div className="flex-1 flex flex-col items-center justify-center py-4 px-6">
                     <Logo className="lg:hidden mb-8" />
-                    <Suspense fallback={<div className="text-primary">Loading...</div>}>
+                    <Suspense fallback={<div className="h-dvh flex items-center justify-center"><Spinner size="large" /></div>}>
                         <AuthForm />
                     </Suspense>
                 </div>
