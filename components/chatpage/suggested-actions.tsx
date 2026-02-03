@@ -23,7 +23,7 @@ function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
 
 	return (
 		<div
-			className="grid w-full gap-2 sm:grid-cols-2"
+			className="grid w-full gap-2 lg:grid-cols-2"
 			data-testid="suggested-actions"
 		>
 			{suggestedActions.map((suggestedAction, index) => (
@@ -33,6 +33,7 @@ function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
 					initial={{ opacity: 0, y: 20 }}
 					key={suggestedAction}
 					transition={{ delay: 0.05 * index }}
+					className={index >= 2 ? "hidden lg:block" : ""}
 				>
 					<Suggestion
 						className="h-auto w-full p-3 text-left whitespace-normal"
