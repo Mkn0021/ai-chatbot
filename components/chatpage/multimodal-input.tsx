@@ -42,8 +42,9 @@ import { Button } from "@/components/ui/button";
 import { VisibilityType } from "@/app/(chat)/schema";
 import { SuggestedActions } from "./suggested-actions";
 import { PreviewAttachment } from "./message/preview-attachment";
-import { ArrowUp, Paperclip, Square as Stop } from "lucide-react";
+import { Paperclip, Square as Stop } from "lucide-react";
 import type { ChatModel } from "@/lib/ai/models";
+import { DropdownMenuSeparator } from "../ui/dropdown-menu";
 
 function setCookie(name: string, value: string) {
 	const maxAge = 60 * 60 * 24 * 365; // 1 year
@@ -511,7 +512,7 @@ function PureModelSelectorCompact({
 			</ModelSelectorTrigger>
 			<ModelSelectorContent>
 				<ModelSelectorInput placeholder="Search models..." />
-				<div className="mt-1 h-px w-full bg-neutral-300 mask-x-from-60%" />
+				<DropdownMenuSeparator />
 				<ModelSelectorList>
 					{Object.entries(modelsByProvider).map(
 						([providerKey, providerModels]) => (

@@ -12,7 +12,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { InputGroup, InputGroupAddon } from "@/components/ui/input-group";
-import { SearchIcon, CheckIcon } from "lucide-react";
+import { SearchIcon } from "lucide-react";
 
 function Command({
 	className,
@@ -93,9 +93,12 @@ function CommandList({
 		<CommandPrimitive.List
 			data-slot="command-list"
 			className={cn(
-				"no-scrollbar max-h-72 scroll-py-1 overflow-x-hidden overflow-y-auto outline-none",
-				className,
+				"max-h-72 overflow-x-hidden overflow-y-auto outline-none",
+				className
 			)}
+			style={{
+				scrollbarWidth: "thin",
+			}}
 			{...props}
 		/>
 	);
@@ -152,7 +155,7 @@ function CommandItem({
 		<CommandPrimitive.Item
 			data-slot="command-item"
 			className={cn(
-				"data-selected:bg-accent data-selected:text-accent-foreground data-selected:*:[svg]:text-accent-foreground group/command-item relative flex cursor-default items-center gap-2 px-3 py-2 text-sm outline-hidden select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+				"data-selected:bg-accent data-selected:text-accent-foreground data-selected:*:[svg]:text-accent-foreground group/command-item relative flex cursor-default items-center gap-2 p-2 text-sm outline-hidden select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
 				"not-last:rounded-none last:rounded-b-[8.6px]",
 				className,
 			)}
