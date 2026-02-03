@@ -9,27 +9,42 @@ export const Footer = () => {
 				<div className="flex flex-col items-start">
 					<Logo />
 					<h2 className="mt-8 max-w-md text-2xl font-medium">
-						Transform education with AI. Automate academic workflows
-						intelligently.
+						Connect any database. Use any AI model. Get insights in seconds.
 					</h2>
 				</div>
 				<div className="grid grid-cols-1 gap-8 justify-self-end md:grid-cols-4">
 					<FooterColumn
-						title="Platform"
-						items={["Features", "Pricing", "API Docs", "Status"]}
+						title="Product"
+						items={[
+							"Database Setup",
+							"AI Models",
+							"Query Chat",
+							"Visualize",
+							"Security",
+							"API",
+						]}
 					/>
 					<FooterColumn
-						title="University"
+						title="Resources"
 						items={[
-							"For Teachers",
-							"For Students",
-							"For Admins",
-							"Case Studies",
+							"Docs",
+							"Tutorials",
+							"Community",
+							"Blog",
+							"Support",
+							"Status",
 						]}
 					/>
 					<FooterColumn
 						title="Company"
-						items={["About", "Blog", "Careers", "Contact"]}
+						items={[
+							"About",
+							"Careers",
+							"Contact",
+							"Privacy",
+							"Terms",
+							"Partners",
+						]}
 					/>
 				</div>
 			</div>
