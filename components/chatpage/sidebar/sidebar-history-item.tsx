@@ -63,7 +63,7 @@ const PureChatItem = ({
 
                 <DropdownMenuContent align="end" side="bottom">
                     <DropdownMenuSub>
-                        <DropdownMenuSubTrigger className="cursor-pointer">
+                        <DropdownMenuSubTrigger className="cursor-pointer rounded-b-none rounded-t-[8.6px]">
                             <Share2 />
                             <span>Share</span>
                         </DropdownMenuSubTrigger>

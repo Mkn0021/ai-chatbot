@@ -44,7 +44,7 @@ export function SidebarUserNav({ user }: { user: User }) {
                             </SidebarMenuButton>
                         ) : (
                             <SidebarMenuButton
-                                className="h-10 bg-background data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                                className="h-10 bg-background data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground focus-visible:ring-0"
                                 data-testid="user-nav-button"
                             >
                                 <Image
