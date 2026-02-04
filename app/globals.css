@@ -91,11 +91,11 @@
   --border: #E5E5E5;
   --input: #E5E5E5;
   --ring: oklch(0.7058 0.1237 48.2811);
-  --chart-1: oklch(0.7058 0.1237 48.2811);
-  --chart-2: oklch(0.3715 0 0);
-  --chart-3: oklch(0.2850 0 0);
-  --chart-4: oklch(0.5555 0 0);
-  --chart-5: oklch(0.7155 0 0);
+  --chart-1: rgba(254, 166, 89, 1);
+  --chart-2: oklch(0.7050 0.2130 47.6040);
+  --chart-3: oklch(0.2850 0.2130 47.6040);
+  --chart-4: oklch(0.5555 0.2130 47.6040);
+  --chart-5: oklch(0.7155 0.2130 47.6040);
   --radius: 0.6rem;
   --sidebar: oklch(0.9912 0.0064 47.604);
   --sidebar-foreground: oklch(0.3715 0 0);

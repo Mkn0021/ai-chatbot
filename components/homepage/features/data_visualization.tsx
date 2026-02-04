@@ -96,7 +96,7 @@ export function GraphBar({
 				"relative w-full cursor-pointer rounded-t-[15px] transition-opacity hover:opacity-80",
 				className,
 				variant == "primary"
-					? "bg-[linear-gradient(180deg,#FEA353_0%,#FFF_100%),linear-gradient(90deg,#D9D9D9_0%,#737373_100%)]"
+					? "bg-[linear-gradient(180deg,var(--color-chart-1)_0%,#FFF_100%),linear-gradient(90deg,#D9D9D9_0%,#737373_100%)]"
 					: "bg-[linear-gradient(180deg,#BFBFBF_0%,#FFF_100%),linear-gradient(90deg,#D9D9D9_0%,#737373_100%)]",
 			)}
 		/>

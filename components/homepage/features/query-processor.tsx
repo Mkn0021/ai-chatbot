@@ -63,7 +63,7 @@ export function Circle({
 				"absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full",
 				className,
 				variant == "primary"
-					? "bg-[radial-gradient(circle,rgba(249,250,251,1)_0%,rgba(255,187,128,1)_50%,rgba(254,166,89,1)_100%)]"
+					? "bg-[radial-gradient(circle,rgba(249,250,251,1)_0%,rgba(255,187,128,1)_50%,var(--color-chart-1)_100%)]"
 					: "bg-white",
 			)}
 		>
