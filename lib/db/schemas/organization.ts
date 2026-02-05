@@ -7,6 +7,7 @@ export const organization = pgTable("organizations", {
 	dailyMessageLimit: integer("daily_message_limit").default(1000),
 	userDailyLimit: integer("user_daily_limit").default(100),
 	defaultModelId: text("default_model_id"),
+	databaseUrl: text("database_url"),
 	createdAt: timestamp("created_at").defaultNow(),
 });
 

@@ -9,7 +9,7 @@ import { DEFAULT_MODELS } from "@/lib/ai/models";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { generateText, LanguageModel, type UIMessage } from "ai";
 import type {
-	ExecuteCustomSqlInput,
+	ExecuteSqlInput,
 	GetChatsByUserId,
 	UpdateChatVisibilityInput,
 	VisibilityType,
@@ -455,13 +455,41 @@ export async function deleteTrailingMessages({ id }: { id: string }) {
 }
 
 export async function executeSqlQuery({
-	databaseUrl,
+	organizationId,
 	sqlQuery,
 	visualizationType,
-}: ExecuteCustomSqlInput): Promise<SqlQueryResult> {
+}: ExecuteSqlInput): Promise<SqlQueryResult> {
 	let pool: Pool | null = null;
 
 	try {
+		if (!organizationId || organizationId === "app") {
+			throw APIError.badRequest(
+				"Organization ID is required to execute SQL queries",
+			);
+		}
+
+		const [org] = await db
+			.select({
+				databaseUrl: organization.databaseUrl,
+			})
+			.from(organization)
+			.where(eq(organization.id, organizationId))
+			.limit(1);
+
+		if (!org) {
+			throw APIError.notFound(
+				`Organization with ID ${organizationId} not found`,
+			);
+		}
+
+		if (!org.databaseUrl) {
+			throw APIError.badRequest(
+				"Database URL is not configured for this organization",
+			);
+		}
+
+		const databaseUrl = org.databaseUrl;
+
 		const trimmedQuery = sqlQuery.trim();
 		const upperQuery = trimmedQuery.toUpperCase();
 

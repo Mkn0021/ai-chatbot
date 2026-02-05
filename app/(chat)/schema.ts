@@ -60,9 +60,6 @@ export const VoteMessageSchema = {
 
 export const SqlQueryInputSchema = {
 	body: z.object({
-		databaseUrl: z
-			.url("Invalid database URL")
-			.describe("PostgreSQL database connection URL"),
 		sqlQuery: z
 			.string()
 			.min(1, "SQL query cannot be empty")
@@ -81,6 +78,10 @@ export const SqlQueryInputSchema = {
 	}),
 };
 
+const ExecuteSqlInputSchema = SqlQueryInputSchema.body.extend({
+	organizationId: z.string().min(1, "Organization ID is required"),
+});
+
 export type Chat = z.infer<typeof ChatSelectSchema>;
 export type ChatStream = z.infer<typeof ChatStreamSchema>;
 export type GetChatsByUserId = z.infer<typeof GetChatsHistorySchema.query> & {
@@ -91,5 +92,4 @@ export type UpdateChatVisibilityInput = z.infer<
 	typeof UpdateChatVisibilitySchema.body
 >;
 export type VisibilityType = z.infer<typeof ChatSelectSchema.shape.visibility>;
-export type ExecuteCustomSqlInput = z.infer<typeof SqlQueryInputSchema.body>;
-
+export type ExecuteSqlInput = z.infer<typeof ExecuteSqlInputSchema>;
