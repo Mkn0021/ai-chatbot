@@ -10,7 +10,7 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
-export const fetcher = async (input: RequestInfo | URL, init?: RequestInit) => {
+export const fetcher = async <T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> => {
 	const response = await fetch(input, init);
 
 	if (!response.ok) {
