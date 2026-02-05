@@ -94,7 +94,7 @@ function CommandList({
 			data-slot="command-list"
 			className={cn(
 				"max-h-72 overflow-x-hidden overflow-y-auto outline-none",
-				className
+				className,
 			)}
 			style={{
 				scrollbarWidth: "thin",
