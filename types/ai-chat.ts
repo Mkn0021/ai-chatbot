@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { UIMessage } from "ai";
 import { Suggestion } from "@/lib/db/schemas";
+import { ExecuteCustomSqlInput } from "@/app/(chat)/schema";
 
 export type DataPart = { type: "append-message"; message: string };
 
@@ -36,4 +37,20 @@ export type Attachment = {
 	name: string;
 	url: string;
 	contentType: string;
+};
+
+export type SqlQueryResult = {
+	success: boolean;
+	data: Record<string, unknown>[];
+	rowCount: number;
+	visualizationType: ExecuteCustomSqlInput["visualizationType"];
+	columns: string[];
+	metadata: {
+		fields?: Array<{
+			name: string;
+			dataTypeID: number;
+		}>;
+		executedAt: string;
+	};
+	message?: string;
 };

@@ -58,6 +58,29 @@ export const VoteMessageSchema = {
 	body: VoteSelectSchema,
 };
 
+export const SqlQueryInputSchema = {
+	body: z.object({
+		databaseUrl: z
+			.url("Invalid database URL")
+			.describe("PostgreSQL database connection URL"),
+		sqlQuery: z
+			.string()
+			.min(1, "SQL query cannot be empty")
+			.describe("SQL query to execute against the custom database"),
+		visualizationType: z
+			.enum([
+				"none",
+				"area_chart",
+				"bar_chart",
+				"line_chart",
+				"pie_chart",
+				"radial_chart",
+				"bar_chart_label",
+			])
+			.describe("Type of visualization for the query results"),
+	}),
+};
+
 export type Chat = z.infer<typeof ChatSelectSchema>;
 export type ChatStream = z.infer<typeof ChatStreamSchema>;
 export type GetChatsByUserId = z.infer<typeof GetChatsHistorySchema.query> & {
@@ -68,3 +91,5 @@ export type UpdateChatVisibilityInput = z.infer<
 	typeof UpdateChatVisibilitySchema.body
 >;
 export type VisibilityType = z.infer<typeof ChatSelectSchema.shape.visibility>;
+export type ExecuteCustomSqlInput = z.infer<typeof SqlQueryInputSchema.body>;
+

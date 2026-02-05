@@ -1,12 +1,15 @@
 import "server-only";
 
+import { Pool } from "pg";
 import db from "@/lib/db";
 import APIError from "@/lib/api/error";
 import { TITLE_PROMPT } from "@/lib/ai/prompts";
 import { getTextFromMessage } from "@/lib/utils";
-import { generateText, LanguageModel, type UIMessage } from "ai";
 import { DEFAULT_MODELS } from "@/lib/ai/models";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { generateText, LanguageModel, type UIMessage } from "ai";
 import type {
+	ExecuteCustomSqlInput,
 	GetChatsByUserId,
 	UpdateChatVisibilityInput,
 	VisibilityType,
@@ -34,6 +37,7 @@ import {
 	stream,
 	vote,
 } from "@/lib/db/schemas";
+import type { SqlQueryResult } from "@/types";
 
 const DAILY_MESSAGE_LIMIT = 30;
 
@@ -448,4 +452,87 @@ export async function deleteTrailingMessages({ id }: { id: string }) {
 		chatId: message.chatId,
 		timestamp: message.createdAt,
 	});
+}
+
+export async function executeSqlQuery({
+	databaseUrl,
+	sqlQuery,
+	visualizationType,
+}: ExecuteCustomSqlInput): Promise<SqlQueryResult> {
+	let pool: Pool | null = null;
+
+	try {
+		const trimmedQuery = sqlQuery.trim();
+		const upperQuery = trimmedQuery.toUpperCase();
+
+		if (!upperQuery.startsWith("SELECT")) {
+			throw APIError.badRequest(
+				"Only SELECT queries are allowed for security reasons",
+			);
+		}
+
+		if (
+			upperQuery.includes("DROP") ||
+			upperQuery.includes("DELETE") ||
+			upperQuery.includes("INSERT") ||
+			upperQuery.includes("UPDATE") ||
+			upperQuery.includes("ALTER") ||
+			upperQuery.includes("TRUNCATE")
+		) {
+			throw APIError.badRequest(
+				"Destructive operations are not allowed in queries",
+			);
+		}
+
+		pool = new Pool({
+			connectionString: databaseUrl,
+			max: 1,
+			connectionTimeoutMillis: 10000,
+			idleTimeoutMillis: 5000,
+			ssl: databaseUrl.includes("sslmode=require")
+				? { rejectUnauthorized: false }
+				: undefined,
+		});
+
+		await pool
+			.connect()
+			.then((client) => client.release())
+			.catch(() => {
+				throw APIError.badRequest(
+					"Invalid database connection. Unable to connect to the provided database URL.",
+				);
+			});
+
+		const customDb = drizzle(pool);
+		const result = await customDb.execute(trimmedQuery);
+
+		const columns = result.rows.length > 0 ? Object.keys(result.rows[0]) : [];
+
+		return {
+			success: true,
+			data: result.rows || [],
+			rowCount: result.rowCount || result.rows.length,
+			visualizationType,
+			columns,
+			metadata: {
+				fields: result.fields?.map((field) => ({
+					name: field.name,
+					dataTypeID: field.dataTypeID,
+				})),
+				executedAt: new Date().toISOString(),
+			},
+			message:
+				!result.rows || result.rows.length === 0
+					? "Query executed successfully but returned no results"
+					: undefined,
+		};
+	} finally {
+		if (pool) {
+			try {
+				await pool.end();
+			} catch (closeError) {
+				console.error("Error closing database pool:", closeError);
+			}
+		}
+	}
 }
