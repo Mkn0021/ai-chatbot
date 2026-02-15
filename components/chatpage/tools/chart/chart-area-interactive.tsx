@@ -27,7 +27,7 @@ import {
 import type { ChartProps } from "@/types";
 
 type ChartAreaInteractiveProps = ChartProps & {
-	xAxisKey?: string;
+	xAxisKey: string;
 	dataKeys: string[];
 	timeRangeOptions?: Array<{ value: string; label: string; days: number }>;
 };
@@ -37,7 +37,7 @@ export function ChartAreaInteractive({
 	title,
 	description,
 	chartConfig,
-	xAxisKey = "date",
+	xAxisKey,
 	dataKeys,
 	timeRangeOptions = [
 		{ value: "90d", label: "Last 3 months", days: 90 },
@@ -58,16 +58,28 @@ export function ChartAreaInteractive({
 		);
 		if (!selectedRange || selectedRange.days === -1) return chartData;
 
-		const dates = chartData.map((item) => new Date(item[xAxisKey]));
-		const referenceDate = new Date(Math.max(...dates.map((d) => d.getTime())));
+		try {
+			const dates = chartData.map((item) => new Date(item[xAxisKey]));
+			const validDates = dates.filter((date) => !isNaN(date.getTime()));
 
-		const startDate = new Date(referenceDate);
-		startDate.setDate(startDate.getDate() - selectedRange.days);
+			if (validDates.length === 0) {
+				return chartData;
+			}
 
-		return chartData.filter((item) => {
-			const date = new Date(item[xAxisKey]);
-			return date >= startDate;
-		});
+			const referenceDate = new Date(
+				Math.max(...validDates.map((d) => d.getTime())),
+			);
+
+			const startDate = new Date(referenceDate);
+			startDate.setDate(startDate.getDate() - selectedRange.days);
+
+			return chartData.filter((item) => {
+				const date = new Date(item[xAxisKey]);
+				return !isNaN(date.getTime()) && date >= startDate;
+			});
+		} catch {
+			return chartData;
+		}
 	}, [chartData, timeRange, xAxisKey, timeRangeOptions]);
 
 	return (
@@ -138,24 +150,13 @@ export function ChartAreaInteractive({
 							axisLine={false}
 							tickMargin={8}
 							minTickGap={32}
-							tickFormatter={(value) => {
-								const date = new Date(value);
-								return date.toLocaleDateString("en-US", {
-									month: "short",
-									day: "numeric",
-								});
-							}}
+							tickFormatter={(value) => String(value)}
 						/>
 						<ChartTooltip
 							cursor={false}
 							content={
 								<ChartTooltipContent
-									labelFormatter={(value) => {
-										return new Date(value).toLocaleDateString("en-US", {
-											month: "short",
-											day: "numeric",
-										});
-									}}
+									labelFormatter={(value) => String(value)}
 									indicator="dot"
 								/>
 							}
