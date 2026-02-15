@@ -38,6 +38,12 @@ export function ChartPieLabel({
 	trendDirection = "up",
 }: ChartPieLabelProps) {
 	const TrendIcon = trendDirection === "up" ? TrendingUp : TrendingDown;
+
+	const coloredData = chartData.map((item, index) => ({
+		...item,
+		fill: `var(--chart-${(index % 5) + 1})`,
+	}));
+
 	return (
 		<Card className="flex flex-col">
 			<CardHeader className="items-center pb-0">
@@ -51,7 +57,7 @@ export function ChartPieLabel({
 				>
 					<PieChart>
 						<ChartTooltip content={<ChartTooltipContent hideLabel />} />
-						<Pie data={chartData} dataKey={dataKey} label nameKey={nameKey} />
+						<Pie data={coloredData} dataKey={dataKey} label nameKey={nameKey} />
 					</PieChart>
 				</ChartContainer>
 			</CardContent>

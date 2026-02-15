@@ -38,6 +38,12 @@ export function ChartRadialGrid({
 	trendDirection = "up",
 }: ChartRadialGridProps) {
 	const TrendIcon = trendDirection === "up" ? TrendingUp : TrendingDown;
+
+	const coloredData = chartData.map((item, index) => ({
+		...item,
+		fill: `var(--chart-${(index % 5) + 1})`,
+	}));
+
 	return (
 		<Card className="flex flex-col">
 			<CardHeader className="items-center pb-0">
@@ -49,7 +55,7 @@ export function ChartRadialGrid({
 					config={chartConfig}
 					className="mx-auto aspect-square max-h-[250px]"
 				>
-					<RadialBarChart data={chartData} innerRadius={30} outerRadius={100}>
+					<RadialBarChart data={coloredData} innerRadius={30} outerRadius={100}>
 						<ChartTooltip
 							cursor={false}
 							content={<ChartTooltipContent hideLabel nameKey={nameKey} />}
