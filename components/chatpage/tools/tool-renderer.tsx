@@ -38,7 +38,7 @@ export const ToolRenderer = ({
 
 	if (state === "output-available" && renderOutput) {
 		return (
-			<div className={widthClass} key={toolCallId}>
+			<div key={toolCallId} className="py-2">
 				{renderOutput}
 			</div>
 		);
