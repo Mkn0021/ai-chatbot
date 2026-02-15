@@ -8,11 +8,13 @@ import type { UseChatHelpers } from "@ai-sdk/react";
 import { useDataStream } from "../data-stream-provider";
 import { MessageContent } from "@/components/ai-element/message";
 import { Response } from "@/components/ai-element/response";
+import { SqlQueryResult } from "../tools/sql-query-result";
 
 import { MessageActions } from "./message-actions";
 import { MessageEditor } from "./message-editor";
 import { MessageReasoning } from "./message-reasoning";
 import { PreviewAttachment } from "./preview-attachment";
+import { ToolPart, ToolRenderer } from "../tools/tool-renderer";
 
 const PurePreviewMessage = ({
 	addToolApprovalResponse,
@@ -158,7 +160,22 @@ const PurePreviewMessage = ({
 							}
 						}
 
-						//TODO: add Tools Related UI here
+						if (type === "tool-sqlQuery") {
+							return (
+								<ToolRenderer
+									key={key}
+									toolName="sqlQuery"
+									part={part as ToolPart}
+									addToolApprovalResponse={addToolApprovalResponse}
+									renderOutput={
+										part.state === "output-available" &&
+										part.output.visualizationType !== "none" ? (
+											<SqlQueryResult result={part.output} />
+										) : undefined
+									}
+								/>
+							);
+						}
 
 						return null;
 					})}

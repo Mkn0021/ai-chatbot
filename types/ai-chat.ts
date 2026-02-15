@@ -1,7 +1,9 @@
 import { z } from "zod";
-import type { UIMessage } from "ai";
 import { Suggestion } from "@/lib/db/schemas";
-import { ExecuteCustomSqlInput } from "@/app/(chat)/schema";
+import { sqlQueryTool } from "@/lib/ai/tools";
+import type { InferUITool, UIMessage } from "ai";
+import { ChartConfig } from "@/components/ui/chart";
+import type { ExecuteSqlInput } from "@/app/(chat)/schema";
 
 export type DataPart = { type: "append-message"; message: string };
 
@@ -11,7 +13,9 @@ export const messageMetadataSchema = z.object({
 
 export type MessageMetadata = z.infer<typeof messageMetadataSchema>;
 
-export type ChatTools = {};
+export type ChatTools = {
+	sqlQuery: InferUITool<ReturnType<typeof sqlQueryTool>>;
+};
 
 export type CustomUIDataTypes = {
 	textDelta: string;
@@ -25,6 +29,7 @@ export type CustomUIDataTypes = {
 	clear: null;
 	finish: null;
 	"chat-title": string;
+	"sql-query-result": SqlQueryResult;
 };
 
 export type ChatMessage = UIMessage<
@@ -43,7 +48,7 @@ export type SqlQueryResult = {
 	success: boolean;
 	data: Record<string, unknown>[];
 	rowCount: number;
-	visualizationType: ExecuteCustomSqlInput["visualizationType"];
+	visualizationType: ExecuteSqlInput["visualizationType"];
 	columns: string[];
 	metadata: {
 		fields?: Array<{
@@ -53,4 +58,11 @@ export type SqlQueryResult = {
 		executedAt: string;
 	};
 	message?: string;
+};
+
+export type ChartProps = {
+	title: string;
+	description: string;
+	chartData: Array<Record<string, any>>;
+	chartConfig: ChartConfig;
 };
