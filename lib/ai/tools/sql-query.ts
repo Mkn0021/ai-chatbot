@@ -3,7 +3,7 @@ import { SQL_QUERY_DESCRIPTION } from "@/lib/ai/prompts";
 import { SqlQueryInputSchema } from "@/app/(chat)/schema";
 import { executeSqlQuery } from "@/app/(chat)/actions";
 import { auth } from "@/app/(auth)/auth";
-import { ChatMessage } from "@/types";
+import { ChatMessage, SqlQueryResult } from "@/types";
 
 type SqlQeueryProps = {
 	session: NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>;
@@ -13,17 +13,30 @@ type SqlQeueryProps = {
 export const sqlQueryTool = ({ session, dataStream }: SqlQeueryProps) =>
 	tool({
 		description: SQL_QUERY_DESCRIPTION,
-		inputSchema: SqlQueryInputSchema.body,
+		inputSchema: SqlQueryInputSchema,
 		needsApproval: true,
-		execute: async ({ sqlQuery, visualizationType }) => {
+		execute: async (input) => {
 			const organizationId = session!.user.organizationId;
 
 			const sqlResult = await executeSqlQuery({
 				organizationId,
-				sqlQuery,
-				visualizationType,
+				sqlQuery: input.sqlQuery,
 			});
 
-			return sqlResult;
+			const result: SqlQueryResult = {
+				...sqlResult,
+				visualizationType: input.visualizationType,
+				chartProps: {
+					title: input.title,
+					description: input.description,
+					footer: input.footer,
+					trendText: sqlResult.metadata.trend?.text,
+					trendDirection: sqlResult.metadata.trend?.direction,
+					nameKey: input.nameKey,
+					dataKeys: input.dataKeys,
+				},
+			};
+
+			return result;
 		},
 	});

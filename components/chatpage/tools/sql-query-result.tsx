@@ -68,13 +68,22 @@ const determineKeys = (
 };
 
 export function SqlQueryResult({ result }: SqlQueryResultProps) {
-	const { data, visualizationType, columns } = result;
+	const { data, visualizationType, columns, chartProps } = result;
 	const chartConfig = generateChartConfig(columns);
 	const { xAxisKey, dataKeys } = determineKeys(data, columns);
 
-	const chartProps = {
-		title: "Query Results",
-		description: `${data.length} rows returned`,
+	// Use chartProps from result
+	const title = chartProps?.title || "Query Results";
+	const description = chartProps?.description || `${data.length} rows returned`;
+	const footer = chartProps?.footer;
+	const trendText = chartProps?.trendText;
+	const trendDirection = chartProps?.trendDirection;
+	const nameKey = chartProps?.nameKey || xAxisKey;
+	const resultDataKeys = chartProps?.dataKeys || dataKeys;
+
+	const baseChartProps = {
+		title,
+		description,
 		chartData: data,
 		chartConfig,
 	};
@@ -83,54 +92,63 @@ export function SqlQueryResult({ result }: SqlQueryResultProps) {
 		case "area_chart":
 			return (
 				<ChartAreaInteractive
-					{...chartProps}
-					xAxisKey={xAxisKey}
-					dataKeys={dataKeys}
+					{...baseChartProps}
+					xAxisKey={nameKey}
+					dataKeys={resultDataKeys}
 				/>
 			);
 
 		case "bar_chart":
 			return (
 				<ChartBarInteractive
-					{...chartProps}
-					xAxisKey={xAxisKey}
-					dataKeys={dataKeys}
+					{...baseChartProps}
+					xAxisKey={nameKey}
+					dataKeys={resultDataKeys}
 				/>
 			);
 
 		case "line_chart":
 			return (
 				<ChartLineInteractive
-					{...chartProps}
-					xAxisKey={xAxisKey}
-					dataKeys={dataKeys}
+					{...baseChartProps}
+					xAxisKey={nameKey}
+					dataKeys={resultDataKeys}
 				/>
 			);
 
 		case "pie_chart":
 			return (
 				<ChartPieLabel
-					{...chartProps}
-					nameKey={xAxisKey}
-					dataKey={dataKeys[0]}
+					{...baseChartProps}
+					nameKey={nameKey}
+					dataKey={resultDataKeys[0]}
+					footer={footer}
+					trendText={trendText}
+					trendDirection={trendDirection}
 				/>
 			);
 
 		case "radial_chart":
 			return (
 				<ChartRadialGrid
-					{...chartProps}
-					nameKey={xAxisKey}
-					dataKey={dataKeys[0]}
+					{...baseChartProps}
+					nameKey={nameKey}
+					dataKey={resultDataKeys[0]}
+					footer={footer}
+					trendText={trendText}
+					trendDirection={trendDirection}
 				/>
 			);
 
 		case "bar_chart_label":
 			return (
 				<ChartBarLabel
-					{...chartProps}
-					xAxisKey={xAxisKey}
-					yAxisKey={dataKeys[0]}
+					{...baseChartProps}
+					xAxisKey={nameKey}
+					yAxisKey={resultDataKeys[0]}
+					footer={footer}
+					trendText={trendText}
+					trendDirection={trendDirection}
 				/>
 			);
 

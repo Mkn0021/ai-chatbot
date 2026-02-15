@@ -37,7 +37,6 @@ import {
 	stream,
 	vote,
 } from "@/lib/db/schemas";
-import type { SqlQueryResult } from "@/types";
 
 const DAILY_MESSAGE_LIMIT = 30;
 
@@ -454,11 +453,55 @@ export async function deleteTrailingMessages({ id }: { id: string }) {
 	});
 }
 
+function calculateTrend(
+	data: Record<string, unknown>[],
+	columns: string[],
+): { direction: "up" | "down"; percentage: number; text: string } | null {
+	if (data.length < 2) return null;
+
+	const numericColumns = columns.filter((col) => {
+		const lowerCol = col.toLowerCase();
+		return (
+			typeof data[0]?.[col] === "number" &&
+			!lowerCol.includes("id") &&
+			!lowerCol.includes("year") &&
+			lowerCol !== "count"
+		);
+	});
+
+	if (numericColumns.length === 0) return null;
+
+	const valueColumn = numericColumns[0];
+	const values = data.map((row) => Number(row[valueColumn]) || 0);
+
+	const midpoint = Math.floor(values.length / 2);
+	const firstHalfAvg =
+		values.slice(0, midpoint).reduce((a, b) => a + b, 0) / midpoint;
+	const secondHalfAvg =
+		values.slice(midpoint).reduce((a, b) => a + b, 0) /
+		(values.length - midpoint);
+
+	if (firstHalfAvg === 0) return null;
+
+	const percentageChange =
+		((secondHalfAvg - firstHalfAvg) / Math.abs(firstHalfAvg)) * 100;
+
+	if (Math.abs(percentageChange) < 5) return null;
+
+	const direction = percentageChange > 0 ? "up" : "down";
+	const absPercentage = Math.abs(percentageChange);
+
+	return {
+		direction,
+		percentage: Math.round(absPercentage * 10) / 10,
+		text: `Trending ${direction} by ${absPercentage.toFixed(1)}% based on data pattern`,
+	};
+}
+
 export async function executeSqlQuery({
 	organizationId,
 	sqlQuery,
-	visualizationType,
-}: ExecuteSqlInput): Promise<SqlQueryResult> {
+}: ExecuteSqlInput) {
 	let pool: Pool | null = null;
 
 	try {
@@ -536,11 +579,12 @@ export async function executeSqlQuery({
 
 		const columns = result.rows.length > 0 ? Object.keys(result.rows[0]) : [];
 
+		const trend = calculateTrend(result.rows, columns);
+
 		return {
 			success: true,
 			data: result.rows || [],
 			rowCount: result.rowCount || result.rows.length,
-			visualizationType,
 			columns,
 			metadata: {
 				fields: result.fields?.map((field) => ({
@@ -548,6 +592,7 @@ export async function executeSqlQuery({
 					dataTypeID: field.dataTypeID,
 				})),
 				executedAt: new Date().toISOString(),
+				trend: trend || undefined,
 			},
 			message:
 				!result.rows || result.rows.length === 0

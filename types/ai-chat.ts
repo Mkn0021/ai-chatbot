@@ -3,7 +3,7 @@ import { Suggestion } from "@/lib/db/schemas";
 import { sqlQueryTool } from "@/lib/ai/tools";
 import type { InferUITool, UIMessage } from "ai";
 import { ChartConfig } from "@/components/ui/chart";
-import type { ExecuteSqlInput } from "@/app/(chat)/schema";
+import type { VisualizationType, ChartPropsInput } from "@/app/(chat)/schema";
 
 export type DataPart = { type: "append-message"; message: string };
 
@@ -48,7 +48,7 @@ export type SqlQueryResult = {
 	success: boolean;
 	data: Record<string, unknown>[];
 	rowCount: number;
-	visualizationType: ExecuteSqlInput["visualizationType"];
+	visualizationType: VisualizationType;
 	columns: string[];
 	metadata: {
 		fields?: Array<{
@@ -56,8 +56,17 @@ export type SqlQueryResult = {
 			dataTypeID: number;
 		}>;
 		executedAt: string;
+		trend?: {
+			direction: "up" | "down";
+			percentage: number;
+			text: string;
+		};
 	};
 	message?: string;
+	chartProps?: ChartPropsInput & {
+		trendText?: string;
+		trendDirection?: "up" | "down";
+	};
 };
 
 export type ChartProps = {

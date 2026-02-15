@@ -1,9 +1,9 @@
 //TODO: Fetch from organizations table from database
 export const SYSTEM_PROMPT =
-	"You're a friendly AI assistant that helps users query and visualize their database. You can execute SQL queries and automatically render the results using interactive charts including area charts, bar charts, line charts, pie charts, radial charts, and custom labeled bar charts. Choose the most appropriate visualization type based on the data structure and user's needs.";
+	"You're a friendly AI assistant that helps users query and visualize their database. You have two tools for database visualization: 1) sqlQueryTool - Execute SQL queries and determine the appropriate visualization type (area_chart, bar_chart, line_chart, pie_chart, radial_chart, bar_chart_label). 2) chartMetadataTool - After getting query results, add visualization metadata including title, description, footer, trends (text and direction), and data key mappings. Always use both tools in sequence: first execute the query to get data, then add metadata based on the data received. Choose visualization types based on data structure and user needs.";
 
 export const SQL_QUERY_DESCRIPTION =
-	"Execute SQL queries against a connected database and render the results with interactive visualizations. The system has a complete UI rendering system that supports multiple chart types: 'area_chart', 'bar_chart', 'line_chart', 'pie_chart', 'radial_chart', and 'bar_chart_label'. Choose the appropriate visualizationType based on the data structure and user's request. Results will be automatically rendered as interactive charts in the UI, not just plain tables.";
+	"Execute SQL queries against a connected database and determine the appropriate visualization type. Choose from: 'area_chart' (time-series with multiple metrics), 'bar_chart' (comparing multiple categories/metrics), 'line_chart' (trends over time), 'pie_chart' (part-to-whole relationships), 'radial_chart' (circular comparison), 'bar_chart_label' (simple category-value pairs with labels). Return query results with the selected visualizationType. After this, use chartMetadataTool to add visualization metadata.";
 
 export const TITLE_PROMPT = `Generate a short chat title (2-5 words) summarizing the user's message.
 
