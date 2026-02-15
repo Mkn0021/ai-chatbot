@@ -58,59 +58,34 @@ export const VoteMessageSchema = {
 	body: VoteSelectSchema,
 };
 
-export const SqlQueryInputSchema = z
-	.object({
-		sqlQuery: z
-			.string()
-			.min(1, "SQL query cannot be empty")
-			.describe("SQL query to execute against the custom database"),
-		visualizationType: z
-			.enum([
-				"none",
-				"area_chart",
-				"bar_chart",
-				"line_chart",
-				"pie_chart",
-				"radial_chart",
-				"bar_chart_label",
-			])
-			.describe("Type of visualization for the query results"),
-		title: z.string().describe("Title for the visualization"),
-		description: z
-			.string()
-			.optional()
-			.describe("Description for the visualization"),
-		footer: z
-			.string()
-			.optional()
-			.describe(
-				"Footer text for the visualization. Only applicable for pie_chart, radial_chart, and bar_chart_label. Trends are automatically calculated by the backend.",
-			),
-		nameKey: z
-			.string()
-			.describe(
-				"Column name to use for categorical axis (x-axis) or labels. Required for all chart types except 'none'.",
-			)
-			.optional(),
-		dataKeys: z
-			.array(z.string())
-			.describe(
-				"Array of column names for data values. For single-value charts (pie_chart, radial_chart, bar_chart_label), provide one column name. For multi-value charts (area_chart, bar_chart, line_chart), provide multiple column names.",
-			)
-			.optional(),
-	})
-	.refine(
-		(data) => {
-			if (data.visualizationType === "none") {
-				return true;
-			}
-			return data.nameKey && data.dataKeys && data.dataKeys.length > 0;
-		},
-		{
-			message:
-				"Invalid chart configuration: nameKey and dataKeys are required for all chart types.",
-		},
-	);
+export const SqlQueryInputSchema = z.object({
+	sqlQuery: z
+		.string()
+		.min(1, "SQL query cannot be empty")
+		.describe("SQL query to execute against the custom database"),
+	visualizationType: z
+		.enum([
+			"none",
+			"area_chart",
+			"bar_chart",
+			"line_chart",
+			"pie_chart",
+			"radial_chart",
+			"bar_chart_label",
+		])
+		.describe("Type of visualization for the query results"),
+	title: z.string().describe("Title for the visualization"),
+	description: z
+		.string()
+		.optional()
+		.describe("Description for the visualization"),
+	footer: z
+		.string()
+		.optional()
+		.describe(
+			"Footer text for the visualization. Only applicable for pie_chart, radial_chart, and bar_chart_label. Trends are automatically calculated by the backend.",
+		),
+});
 
 const ExecuteSqlInputSchema = z.object({
 	sqlQuery: SqlQueryInputSchema.shape.sqlQuery,

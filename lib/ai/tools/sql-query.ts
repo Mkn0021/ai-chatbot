@@ -31,9 +31,7 @@ export const sqlQueryTool = ({ session, dataStream }: SqlQeueryProps) =>
 					description: input.description,
 					footer: input.footer,
 					trendText: sqlResult.metadata.trend?.text,
-					trendDirection: sqlResult.metadata.trend?.direction,
-					nameKey: input.nameKey,
-					dataKeys: input.dataKeys,
+					trendDirection: sqlResult.metadata.trend?.direction
 				},
 			};
 

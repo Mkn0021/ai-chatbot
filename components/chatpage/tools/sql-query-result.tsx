@@ -45,6 +45,13 @@ const determineKeys = (
 	data: Record<string, unknown>[],
 	columns: string[],
 ): { xAxisKey: string; dataKeys: string[] } => {
+	if (!data || data.length === 0 || !columns || columns.length === 0) {
+		return {
+			xAxisKey: columns?.[0] || "x",
+			dataKeys: columns?.slice(1) || ["y"],
+		};
+	}
+
 	const xAxisCandidates = [
 		"date",
 		"month",
@@ -53,6 +60,7 @@ const determineKeys = (
 		"category",
 		"label",
 	];
+
 	const xAxisKey =
 		columns.find((col) => xAxisCandidates.includes(col.toLowerCase())) ||
 		columns[0];
@@ -61,9 +69,16 @@ const determineKeys = (
 		(col) => col !== xAxisKey && typeof data[0]?.[col] === "number",
 	);
 
+	const fallbackKeys = columns.filter((col) => col !== xAxisKey);
+
 	return {
 		xAxisKey,
-		dataKeys: dataKeys.length > 0 ? dataKeys : [columns[1] || columns[0]],
+		dataKeys:
+			dataKeys.length > 0
+				? dataKeys
+				: fallbackKeys.length > 0
+					? fallbackKeys
+					: [columns[1] || columns[0]],
 	};
 };
 
@@ -72,14 +87,11 @@ export function SqlQueryResult({ result }: SqlQueryResultProps) {
 	const chartConfig = generateChartConfig(columns);
 	const { xAxisKey, dataKeys } = determineKeys(data, columns);
 
-	// Use chartProps from result
 	const title = chartProps?.title || "Query Results";
 	const description = chartProps?.description || `${data.length} rows returned`;
 	const footer = chartProps?.footer;
 	const trendText = chartProps?.trendText;
 	const trendDirection = chartProps?.trendDirection;
-	const nameKey = chartProps?.nameKey || xAxisKey;
-	const resultDataKeys = chartProps?.dataKeys || dataKeys;
 
 	const baseChartProps = {
 		title,
@@ -93,8 +105,8 @@ export function SqlQueryResult({ result }: SqlQueryResultProps) {
 			return (
 				<ChartAreaInteractive
 					{...baseChartProps}
-					xAxisKey={nameKey}
-					dataKeys={resultDataKeys}
+					xAxisKey={xAxisKey}
+					dataKeys={dataKeys}
 				/>
 			);
 
@@ -102,8 +114,8 @@ export function SqlQueryResult({ result }: SqlQueryResultProps) {
 			return (
 				<ChartBarInteractive
 					{...baseChartProps}
-					xAxisKey={nameKey}
-					dataKeys={resultDataKeys}
+					xAxisKey={xAxisKey}
+					dataKeys={dataKeys}
 				/>
 			);
 
@@ -111,8 +123,8 @@ export function SqlQueryResult({ result }: SqlQueryResultProps) {
 			return (
 				<ChartLineInteractive
 					{...baseChartProps}
-					xAxisKey={nameKey}
-					dataKeys={resultDataKeys}
+					xAxisKey={xAxisKey}
+					dataKeys={dataKeys}
 				/>
 			);
 
@@ -120,8 +132,8 @@ export function SqlQueryResult({ result }: SqlQueryResultProps) {
 			return (
 				<ChartPieLabel
 					{...baseChartProps}
-					nameKey={nameKey}
-					dataKey={resultDataKeys[0]}
+					nameKey={xAxisKey}
+					dataKey={dataKeys[0]}
 					footer={footer}
 					trendText={trendText}
 					trendDirection={trendDirection}
@@ -132,8 +144,8 @@ export function SqlQueryResult({ result }: SqlQueryResultProps) {
 			return (
 				<ChartRadialGrid
 					{...baseChartProps}
-					nameKey={nameKey}
-					dataKey={resultDataKeys[0]}
+					nameKey={xAxisKey}
+					dataKey={dataKeys[0]}
 					footer={footer}
 					trendText={trendText}
 					trendDirection={trendDirection}
@@ -144,8 +156,8 @@ export function SqlQueryResult({ result }: SqlQueryResultProps) {
 			return (
 				<ChartBarLabel
 					{...baseChartProps}
-					xAxisKey={nameKey}
-					yAxisKey={resultDataKeys[0]}
+					xAxisKey={xAxisKey}
+					yAxisKey={dataKeys[0]}
 					footer={footer}
 					trendText={trendText}
 					trendDirection={trendDirection}
