@@ -46,7 +46,7 @@ export function ChartBarLabel({
 }: ChartBarLabelProps) {
 	const TrendIcon = trendDirection === "up" ? TrendingUp : TrendingDown;
 	return (
-		<Card>
+		<Card className="w-full max-w-6xl">
 			<CardHeader>
 				<CardTitle>{title}</CardTitle>
 				<CardDescription>{description}</CardDescription>
