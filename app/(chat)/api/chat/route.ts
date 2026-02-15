@@ -7,6 +7,7 @@ import { getLanguageModel } from "@/lib/ai/models";
 import { getStreamContext } from "@/lib/ai/context";
 import { errorHandler } from "@/middlewares/error-handler";
 import { ChatIdQuerySchema, ChatStreamSchema } from "@/app/(chat)/schema";
+import { sqlQueryTool } from "@/lib/ai/tools";
 import {
 	convertToModelMessages,
 	createUIMessageStream,
@@ -116,10 +117,12 @@ export async function POST(req: Request) {
 					system: SYSTEM_PROMPT,
 					messages: modelMessages,
 					stopWhen: stepCountIs(5),
-					experimental_activeTools: [], //TODO: add tools here
-					tools: {},
+					experimental_activeTools: ["sqlQuery"],
+					tools: {
+						sqlQuery: sqlQueryTool({ dataStream, session }),
+					},
 					experimental_telemetry: {
-						isEnabled: false, //TODO: isProductionEnvironment
+						isEnabled: false,
 						functionId: "stream-text",
 					},
 				});
