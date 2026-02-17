@@ -1,7 +1,6 @@
 "use client";
 
 import { toast } from "sonner";
-import { Eye, EyeOff } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { ErrorContext } from "better-auth/react";
@@ -68,7 +67,23 @@ const AuthForm: React.FC = () => {
 				onResponse: () => setLoading(false),
 				onRequest: () => setLoading(true),
 				onError: (ctx: ErrorContext) => {
-					toast.error(ctx.error.message);
+					const message = ctx.error.message;
+
+					const isDbError =
+						message.includes("connect ECONNREFUSED") ||
+						message.includes("Failed query") ||
+						message.includes("SERVER_ERROR");
+
+					toast.error(
+						isDbError
+							? "Server unavailable. Please try again later."
+							: message
+					);
+
+					if (!isDbError) {
+						form.setError("email", { type: "manual", message: message });
+						form.setError("password", { type: "manual", message: message });
+					}
 				},
 				onSuccess: async () => {
 					const session = await authClient.getSession();
@@ -100,7 +115,6 @@ const AuthForm: React.FC = () => {
 			}
 		} catch (error) {
 			toast.error("Something went wrong");
-			console.log(error);
 		} finally {
 			setLoading(false);
 		}
