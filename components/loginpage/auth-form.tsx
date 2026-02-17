@@ -2,7 +2,7 @@
 
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { ErrorContext } from "better-auth/react";
 import { authClient } from "@/app/(auth)/actions";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,15 +17,8 @@ import {
 import { Icons } from "@/components/ui/icons";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-	Form,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormControl,
-	FormMessage,
-} from "@/components/ui/form";
 import { PasswordInput } from "@/components/ui/password-input";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 
 const AuthForm: React.FC = () => {
 	const router = useRouter();
@@ -75,9 +68,7 @@ const AuthForm: React.FC = () => {
 						message.includes("SERVER_ERROR");
 
 					toast.error(
-						isDbError
-							? "Server unavailable. Please try again later."
-							: message
+						isDbError ? "Server unavailable. Please try again later." : message,
 					);
 
 					if (!isDbError) {
@@ -142,97 +133,99 @@ const AuthForm: React.FC = () => {
 				</p>
 			</div>
 
-			<Form {...form}>
-				<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-					{mode === "signup" && (
-						<FormField
-							control={form.control}
-							name="name"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Full Name</FormLabel>
-									<FormControl>
-										<Input placeholder="Enter your full name" {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-					)}
-
-					<FormField
+			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+				{mode === "signup" && (
+					<Controller
 						control={form.control}
-						name="email"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Email</FormLabel>
-								<FormControl>
-									<Input placeholder="Enter your email" {...field} />
-								</FormControl>
-								<FormMessage />
-							</FormItem>
+						name="name"
+						render={({ field, fieldState }) => (
+							<Field data-invalid={fieldState.invalid}>
+								<FieldLabel>Full Name</FieldLabel>
+								<Input
+									aria-invalid={fieldState.invalid}
+									placeholder="Enter your full name"
+									{...field}
+								/>
+								{fieldState.invalid && (
+									<FieldError errors={[fieldState.error]} />
+								)}
+							</Field>
 						)}
 					/>
+				)}
 
-					<FormField
+				<Controller
+					control={form.control}
+					name="email"
+					render={({ field, fieldState }) => (
+						<Field data-invalid={fieldState.invalid}>
+							<FieldLabel>Email</FieldLabel>
+							<Input
+								aria-invalid={fieldState.invalid}
+								placeholder="Enter your email"
+								{...field}
+							/>
+							{fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+						</Field>
+					)}
+				/>
+
+				<Controller
+					control={form.control}
+					name="password"
+					render={({ field, fieldState }) => (
+						<Field data-invalid={fieldState.invalid}>
+							<FieldLabel>Password</FieldLabel>
+							<PasswordInput
+								aria-invalid={fieldState.invalid}
+								placeholder="••••••••"
+								autoComplete={mode === "signup" ? "new-password" : "password"}
+								{...field}
+							/>
+							{fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+						</Field>
+					)}
+				/>
+
+				{mode === "signup" && (
+					<Controller
 						control={form.control}
-						name="password"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Password</FormLabel>
-								<FormControl>
-									<PasswordInput
-										placeholder="••••••••"
-										autoComplete={
-											mode === "signup" ? "new-password" : "password"
-										}
-										{...field}
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
+						name="confirmPassword"
+						render={({ field, fieldState }) => (
+							<Field data-invalid={fieldState.invalid}>
+								<FieldLabel>Confirm Password</FieldLabel>
+								<PasswordInput
+									aria-invalid={fieldState.invalid}
+									placeholder="••••••••"
+									autoComplete="new-password"
+									{...field}
+								/>
+								{fieldState.invalid && (
+									<FieldError errors={[fieldState.error]} />
+								)}
+							</Field>
 						)}
 					/>
+				)}
 
-					{mode === "signup" && (
-						<FormField
-							control={form.control}
-							name="confirmPassword"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Confirm Password</FormLabel>
-									<FormControl>
-										<PasswordInput
-											placeholder="••••••••"
-											autoComplete="new-password"
-											{...field}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-					)}
-
-					<Button
-						type="submit"
-						className="w-full"
-						disabled={loading}
-						variant="default"
-					>
-						{mode === "signup" ? "Continue" : "Sign In"}
-					</Button>
-					<Button
-						type="button"
-						disabled={loading}
-						className="flex w-full items-center justify-center gap-2"
-						onClick={handleGoogleLogin}
-					>
-						<Icons.google />
-						Continue with Google
-					</Button>
-				</form>
-			</Form>
+				<Button
+					type="submit"
+					className="w-full"
+					disabled={loading}
+					variant="default"
+				>
+					{mode === "signup" ? "Continue" : "Sign In"}
+				</Button>
+				<Button
+					type="button"
+					disabled={loading}
+					className="flex w-full items-center justify-center gap-2"
+					onClick={handleGoogleLogin}
+				>
+					<Icons.google />
+					Continue with Google
+				</Button>
+			</form>
 
 			<div className="text-center text-sm">
 				{mode === "signup" ? "Already registered? " : "Don't have an account? "}
