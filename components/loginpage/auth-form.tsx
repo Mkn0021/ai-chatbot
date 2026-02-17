@@ -1,7 +1,8 @@
 "use client";
 
 import { toast } from "sonner";
-import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { ErrorContext } from "better-auth/react";
 import { authClient } from "@/app/(auth)/actions";
@@ -25,6 +26,7 @@ import {
 	FormControl,
 	FormMessage,
 } from "@/components/ui/form";
+import { PasswordInput } from "@/components/ui/password-input";
 
 const AuthForm: React.FC = () => {
 	const router = useRouter();
@@ -44,7 +46,18 @@ const AuthForm: React.FC = () => {
 			password: "",
 			confirmPassword: "",
 		},
+		mode: "onChange",
 	});
+
+	useEffect(() => {
+		const currentValues = form.getValues();
+		form.reset({
+			name: "",
+			email: currentValues.email || "",
+			password: currentValues.password || "",
+			confirmPassword: "",
+		});
+	}, [mode]);
 
 	const onSubmit = async (values: SignupForm | LoginForm) => {
 		setLoading(true);
@@ -154,8 +167,7 @@ const AuthForm: React.FC = () => {
 							<FormItem>
 								<FormLabel>Password</FormLabel>
 								<FormControl>
-									<Input
-										type="password"
+									<PasswordInput
 										placeholder="••••••••"
 										autoComplete={
 											mode === "signup" ? "new-password" : "password"
@@ -176,8 +188,7 @@ const AuthForm: React.FC = () => {
 								<FormItem>
 									<FormLabel>Confirm Password</FormLabel>
 									<FormControl>
-										<Input
-											type="password"
+										<PasswordInput
 											placeholder="••••••••"
 											autoComplete="new-password"
 											{...field}
