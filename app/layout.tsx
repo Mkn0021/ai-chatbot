@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/sonner";
 import { Inter, Manrope } from "next/font/google";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
@@ -21,7 +22,7 @@ export default function RootLayout({
 		<html lang="en" className={`${inter.variable} ${manrope.variable}`}>
 			<body className="antialiased">
 				<Toaster position="top-right" />
-				{children}
+				<TooltipProvider>{children}</TooltipProvider>
 			</body>
 		</html>
 	);
