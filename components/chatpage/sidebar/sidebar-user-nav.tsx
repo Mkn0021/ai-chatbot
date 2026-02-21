@@ -2,11 +2,13 @@
 
 import Image from "next/image";
 import { toast } from "sonner";
+import { useState } from "react";
 import { useTheme } from "next-themes";
 import type { User } from "@/app/(user)/schema";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/app/(auth)/actions";
 import { ChevronUp, Loader2 } from "lucide-react";
+import { Settings } from "@/components/chatpage/settings";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -24,6 +26,7 @@ export function SidebarUserNav({ user }: { user: User }) {
 	const router = useRouter();
 	const { isPending } = authClient.useSession();
 	const { setTheme, resolvedTheme } = useTheme();
+	const [settingsOpen, setSettingsOpen] = useState(false);
 
 	return (
 		<SidebarMenu>
@@ -74,6 +77,12 @@ export function SidebarUserNav({ user }: { user: User }) {
 							}
 						>
 							{`Toggle ${resolvedTheme === "light" ? "dark" : "light"} mode`}
+						</DropdownMenuItem>
+						<DropdownMenuItem
+							data-testid="user-nav-item-settings"
+							onSelect={(e) => e.preventDefault()}
+						>
+							<Settings open={settingsOpen} onOpenChange={setSettingsOpen} />
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />
 						<DropdownMenuItem asChild data-testid="user-nav-item-auth">
