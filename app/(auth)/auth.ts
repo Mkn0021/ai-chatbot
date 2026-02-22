@@ -3,6 +3,7 @@ import { env } from "@/lib/env";
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { createUserOrganization } from "@/app/(organization)/actions";
 
 export const auth = betterAuth({
 	emailAndPassword: {
@@ -24,6 +25,21 @@ export const auth = betterAuth({
 	database: drizzleAdapter(db, {
 		provider: "pg",
 	}),
+	databaseHooks: {
+		user: {
+			create: {
+				before: async (user) => {
+					const organization = await createUserOrganization({ user });
+					return {
+						data: {
+							...user,
+							organizationId: organization.id,
+						},
+					};
+				},
+			},
+		},
+	},
 	user: {
 		additionalFields: {
 			role: {
@@ -32,7 +48,6 @@ export const auth = betterAuth({
 			},
 			organizationId: {
 				type: "string",
-				defaultValue: "app",
 			},
 		},
 	},
