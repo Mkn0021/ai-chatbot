@@ -1,5 +1,5 @@
 import { asyncHandler } from "@/lib/api/response";
-import { getOrganizationModelInfo } from "@/app/(chat)/actions";
+import { getOrganizationModelInfo } from "@/app/(organization)/actions";
 
 // GET - api/model
 export const GET = asyncHandler(async (_, context, __) => {
@@ -8,7 +8,7 @@ export const GET = asyncHandler(async (_, context, __) => {
 	const organization = await getOrganizationModelInfo({ organizationId });
 
 	return {
-		data: organization.chatModels,
+		data: organization.models,
 		message: "Model retrieved successfully",
 	};
 });

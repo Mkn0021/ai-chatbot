@@ -20,4 +20,8 @@ export const organizationModel = pgTable("organization_models", {
 	name: text("name").notNull(),
 	provider: text("provider").notNull(),
 	description: text("description").notNull(),
+	baseUrl: text("base_url"),
+	status: text("status").default("active"),
+	createdAt: timestamp("created_at").defaultNow(),
+	updatedAt: timestamp("updated_at").defaultNow(),
 });

@@ -5,7 +5,6 @@ import db from "@/lib/db";
 import APIError from "@/lib/api/error";
 import { TITLE_PROMPT } from "@/lib/ai/prompts";
 import { getTextFromMessage } from "@/lib/utils";
-import { DEFAULT_MODELS } from "@/lib/ai/models";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { generateText, LanguageModel, type UIMessage } from "ai";
 import type {
@@ -384,45 +383,6 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
 		return streamIds.map(({ id }) => id);
 	} catch (_error) {
 		throw APIError.badRequest("Failed to get stream ids by chat id");
-	}
-}
-
-export async function getOrganizationModelInfo({
-	organizationId,
-}: {
-	organizationId?: string;
-}) {
-	if (!organizationId || organizationId == "app") {
-		return {
-			messageLimit: DAILY_MESSAGE_LIMIT,
-			chatModels: DEFAULT_MODELS,
-		};
-	}
-	try {
-		const [org] = await db
-			.select({
-				dailyLimit: organization.userDailyLimit,
-			})
-			.from(organization)
-			.where(eq(organization.id, organizationId))
-			.limit(1);
-
-		const models = await db
-			.select()
-			.from(organizationModel)
-			.where(and(eq(organizationModel.organizationId, organizationId)));
-
-		return {
-			messageLimit: org?.dailyLimit || DAILY_MESSAGE_LIMIT,
-			chatModels: models.length > 0 ? models : DEFAULT_MODELS,
-		};
-	} catch (_error) {
-		console.error("Failed to get organization model info");
-
-		return {
-			messageLimit: DAILY_MESSAGE_LIMIT,
-			chatModels: DEFAULT_MODELS,
-		};
 	}
 }
 

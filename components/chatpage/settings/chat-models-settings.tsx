@@ -1,5 +1,6 @@
 "use client";
 
+import useSWR, { type KeyedMutator } from "swr";
 import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -37,81 +38,42 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 
+import { DEFAULT_MODELS } from "@/lib/ai/models";
+import { PasswordInput } from "@/components/ui/password-input";
+import { fetcher, getApiKey, removeApiKey, setApiKey } from "@/lib/utils";
+
 type ModelStatus = "active" | "inactive" | "error";
 
 type ModelItem = {
 	id: string;
-	modelName: string;
+	name: string;
 	provider: string;
-	apiKey: string;
+	description: string;
+	baseUrl?: string | null;
 	status: ModelStatus;
+	createdAt?: Date | null;
+	updatedAt?: Date | null;
 };
 
 export function ChatModelsSettings() {
-	const [models, setModels] = useState<ModelItem[]>([
-		{
-			id: "1",
-			modelName: "GPT-4 Turbo",
-			provider: "OpenAI",
-			apiKey: "sk-abc123456789xyz",
-			status: "active",
-		},
-		{
-			id: "2",
-			modelName: "Claude 3 Opus",
-			provider: "Anthropic",
-			apiKey: "claude-987654321",
-			status: "inactive",
-		},
-		{
-			id: "3",
-			modelName: "Gemini Pro",
-			provider: "Google",
-			apiKey: "gm-445566778899",
-			status: "error",
-		},
-	]);
+	const {
+		data: models,
+		error,
+		isLoading,
+		mutate,
+	} = useSWR<ModelItem[]>("/api/organization/model", fetcher);
 
 	const [addDialogOpen, setAddDialogOpen] = useState(false);
 	const [editDialogOpen, setEditDialogOpen] = useState(false);
 	const [selectedModel, setSelectedModel] = useState<ModelItem | null>(null);
 
-	const handleAddModel = (data: {
-		name: string;
-		provider: string;
-		apiKey: string;
-	}) => {
-		const model: ModelItem = {
-			id: Date.now().toString(),
-			modelName: data.name,
-			provider: data.provider,
-			apiKey: data.apiKey,
-			status: "active",
-		};
-		setModels([...models, model]);
-		setAddDialogOpen(false);
-	};
-
-	const handleEditModel = (data: {
-		name: string;
-		provider: string;
-		apiKey: string;
-	}) => {
-		if (!selectedModel) return;
-		setModels((prev) =>
-			prev.map((m) =>
-				m.id === selectedModel.id
-					? {
-							...m,
-							modelName: data.name,
-							provider: data.provider,
-							apiKey: data.apiKey,
-						}
-					: m,
-			),
+	if (error) {
+		return (
+			<div className="text-destructive py-8 text-center">
+				Failed to load models. Please try again.
+			</div>
 		);
-		setEditDialogOpen(false);
-	};
+	}
 
 	return (
 		<div>
@@ -119,7 +81,7 @@ export function ChatModelsSettings() {
 				<div>
 					<h2 className="mb-1 text-xl font-semibold">Chat Models</h2>
 					<p className="text-muted-foreground text-sm">
-						Configure AI models and API keys for your organization
+						Configure AI models and API keys
 					</p>
 				</div>
 
@@ -137,57 +99,77 @@ export function ChatModelsSettings() {
 				open={addDialogOpen}
 				onOpenChange={setAddDialogOpen}
 				mode="add"
-				onSubmit={handleAddModel}
-				modelOptions={models}
+				mutate={mutate}
 			/>
 
 			<ModelDialog
 				open={editDialogOpen}
 				onOpenChange={setEditDialogOpen}
 				mode="edit"
-				initialData={
-					selectedModel
-						? {
-								name: selectedModel.modelName,
-								provider: selectedModel.provider,
-								apiKey: selectedModel.apiKey,
-							}
-						: undefined
-				}
-				onSubmit={handleEditModel}
-				modelOptions={models}
+				selectedModel={selectedModel}
+				mutate={mutate}
 			/>
 
-			<ChatModelsTable
-				models={models}
-				setModels={setModels}
-				onEdit={(model) => {
-					setSelectedModel(model);
-					setEditDialogOpen(true);
-				}}
-			/>
+			{isLoading ? (
+				<div className="text-muted-foreground w-full py-8 text-center">
+					Loading models...
+				</div>
+			) : (
+				<ChatModelsTable
+					models={models || []}
+					onEdit={(model) => {
+						setSelectedModel(model);
+						setEditDialogOpen(true);
+					}}
+					mutate={mutate}
+				/>
+			)}
 		</div>
 	);
 }
 
 interface ChatModelsTableProps {
 	models: ModelItem[];
-	setModels: React.Dispatch<React.SetStateAction<ModelItem[]>>;
 	onEdit: (model: ModelItem) => void;
+	mutate: KeyedMutator<ModelItem[]>;
 }
 
-const ChatModelsTable = ({
-	models,
-	setModels,
-	onEdit,
-}: ChatModelsTableProps) => {
-	const copyToClipboard = async (value: string) => {
-		await navigator.clipboard.writeText(value);
+const ChatModelsTable = ({ models, onEdit, mutate }: ChatModelsTableProps) => {
+	const handleDeleteModel = async (modelId: string) => {
+		try {
+			const response = await fetch(`/api/organization/models?id=${modelId}`, {
+				method: "DELETE",
+			});
+
+			const result = await response.json();
+
+			if (response.ok) {
+				removeApiKey(modelId);
+
+				await mutate();
+				toast.success("Model deleted successfully");
+			} else {
+				toast.error(result.message || "Failed to delete model");
+			}
+		} catch (error) {
+			console.error("Error deleting model:", error);
+			toast.error("Failed to delete model");
+		}
+	};
+
+	const copyToClipboard = async (modelId: string) => {
+		const apiKey = getApiKey(modelId);
+		if (!apiKey) {
+			toast.error("No API key found");
+			return;
+		}
+		await navigator.clipboard.writeText(apiKey);
 		toast.success("API key copied");
 	};
 
-	const maskKey = (key: string) => {
-		if (!key) return "";
+	const maskKey = (modelId: string) => {
+		const key = getApiKey(modelId);
+		if (!key) return "Not set";
 		return `${key.slice(0, 3)}••••••`;
 	};
 
@@ -204,13 +186,6 @@ const ChatModelsTable = ({
 		}
 	};
 
-	const handleDelete = (id: string) => {
-		setModels((prev: ModelItem[]) =>
-			prev.filter((m: ModelItem) => m.id !== id),
-		);
-		toast.success("Model deleted");
-	};
-
 	return (
 		<div className="mt-4 overflow-hidden rounded-lg border">
 			<Table>
@@ -218,7 +193,7 @@ const ChatModelsTable = ({
 					<TableRow>
 						<TableHead>Model Name</TableHead>
 						<TableHead>Provider</TableHead>
-						<TableHead>API Key</TableHead>
+						<TableHead>API Key / URL</TableHead>
 						<TableHead>Status</TableHead>
 						<TableHead className="w-[60px] text-right">Actions</TableHead>
 					</TableRow>
@@ -227,23 +202,29 @@ const ChatModelsTable = ({
 				<TableBody>
 					{models.map((item) => (
 						<TableRow key={item.id}>
-							<TableCell className="font-medium">{item.modelName}</TableCell>
+							<TableCell className="font-medium">{item.name}</TableCell>
 
-							<TableCell>{item.provider}</TableCell>
+							<TableCell className="capitalize">{item.provider}</TableCell>
 
 							<TableCell>
 								<div className="flex items-center gap-2">
-									<span className="font-mono text-sm tracking-wide">
-										{maskKey(item.apiKey)}
-									</span>
+									{item.baseUrl ? (
+										<span className="font-mono text-sm">{item.baseUrl}</span>
+									) : (
+										<>
+											<span className="font-mono text-sm tracking-wide">
+												{maskKey(item.id)}
+											</span>
 
-									<Button
-										variant="ghost"
-										size="icon"
-										onClick={() => copyToClipboard(item.apiKey)}
-									>
-										<Copy className="h-4 w-4" />
-									</Button>
+											<Button
+												variant="ghost"
+												size="icon"
+												onClick={() => copyToClipboard(item.id)}
+											>
+												<Copy className="h-4 w-4" />
+											</Button>
+										</>
+									)}
 								</div>
 							</TableCell>
 
@@ -271,7 +252,7 @@ const ChatModelsTable = ({
 										</DropdownMenuItem>
 
 										<DropdownMenuItem
-											onClick={() => handleDelete(item.id)}
+											onClick={() => handleDeleteModel(item.id)}
 											className="text-destructive focus:text-destructive"
 										>
 											<Trash className="text-destructive mr-2 h-4 w-4" />
@@ -289,7 +270,7 @@ const ChatModelsTable = ({
 								colSpan={5}
 								className="text-muted-foreground py-8 text-center"
 							>
-								No models configured.
+								No models configured. Click "Add Model" to get started.
 							</TableCell>
 						</TableRow>
 					)}
@@ -303,29 +284,121 @@ interface ModelDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	mode: "add" | "edit";
-	initialData?: { name: string; provider: string; apiKey: string };
-	onSubmit: (data: { name: string; provider: string; apiKey: string }) => void;
-	modelOptions: ModelItem[];
+	selectedModel?: ModelItem | null;
+	mutate: KeyedMutator<ModelItem[]>;
 }
 
 function ModelDialog({
 	open,
 	onOpenChange,
 	mode,
-	initialData,
-	onSubmit,
-	modelOptions,
+	selectedModel,
+	mutate,
 }: ModelDialogProps) {
-	const [form, setForm] = useState({ name: "", provider: "", apiKey: "" });
+	const [form, setForm] = useState({
+		name: "",
+		provider: "",
+		description: "",
+		apiKey: "",
+		baseUrl: "",
+	});
 
 	useEffect(() => {
-		if (mode === "edit" && initialData) setForm(initialData);
-		if (mode === "add") setForm({ name: "", provider: "", apiKey: "" });
-	}, [mode, initialData, open]);
+		if (mode === "edit" && selectedModel) {
+			setForm({
+				name: selectedModel.name,
+				provider: selectedModel.provider,
+				description: selectedModel.description,
+				apiKey: getApiKey(selectedModel.id),
+				baseUrl: selectedModel.baseUrl || "",
+			});
+		}
+		if (mode === "add") {
+			setForm({
+				name: "",
+				provider: "",
+				description: "",
+				apiKey: "",
+				baseUrl: "",
+			});
+		}
+	}, [mode, selectedModel, open]);
+
+	const handleSubmit = async () => {
+		if (mode === "add") {
+			try {
+				const response = await fetch("/api/organization/model", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						name: form.name,
+						provider: form.provider,
+						description: form.description,
+						baseUrl: form.baseUrl || null,
+						status: "active",
+					}),
+				});
+
+				const result = await response.json();
+
+				if (response.ok) {
+					if (form.apiKey) {
+						setApiKey(result.data.id, form.apiKey);
+					}
+
+					mutate();
+					onOpenChange(false);
+					toast.success("Model added successfully");
+				} else {
+					toast.error(result.message || "Failed to add model");
+				}
+			} catch (error) {
+				console.error("Error adding model:", error);
+				toast.error("Failed to add model");
+			}
+		} else if (mode === "edit" && selectedModel) {
+			try {
+				const response = await fetch(
+					`/api/organization/model?id=${selectedModel.id}`,
+					{
+						method: "PUT",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							name: form.name,
+							provider: form.provider,
+							description: form.description,
+							baseUrl: form.baseUrl || null,
+						}),
+					},
+				);
+
+				const result = await response.json();
+
+				if (response.ok) {
+					if (form.apiKey) {
+						setApiKey(selectedModel.id, form.apiKey);
+					}
+
+					mutate();
+					onOpenChange(false);
+					toast.success("Model updated successfully");
+				} else {
+					toast.error(result.message || "Failed to update model");
+				}
+			} catch (error) {
+				console.error("Error updating model:", error);
+				toast.error("Failed to update model");
+			}
+		}
+	};
+
+	const isLocalProvider =
+		form.provider.toLowerCase() === "ollama" ||
+		form.provider.toLowerCase() === "local";
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent>
+			<DialogContent className="w-96">
 				<DialogHeader>
 					<DialogTitle>
 						{mode === "edit" ? "Edit Model" : "Add New Model"}
@@ -340,25 +413,6 @@ function ModelDialog({
 				<div className="space-y-4 pt-4">
 					<div className="flex gap-4">
 						<div className="flex-1 space-y-2">
-							<Label>Model Name</Label>
-							<Select
-								value={form.name}
-								onValueChange={(v) => setForm({ ...form, name: v })}
-							>
-								<SelectTrigger>
-									<SelectValue placeholder="Select a model" />
-								</SelectTrigger>
-								<SelectContent>
-									{modelOptions.map((m) => (
-										<SelectItem key={m.id} value={m.modelName}>
-											{m.modelName}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-
-						<div className="flex-1 space-y-2">
 							<Label>Provider</Label>
 							<Select
 								value={form.provider}
@@ -368,32 +422,101 @@ function ModelDialog({
 									<SelectValue placeholder="Select a provider" />
 								</SelectTrigger>
 								<SelectContent>
-									{[...new Set(modelOptions.map((m) => m.provider))].map(
-										(provider) => (
-											<SelectItem key={provider} value={provider}>
-												{provider}
-											</SelectItem>
-										),
-									)}
+									<SelectItem value="openai">OpenAI</SelectItem>
+									<SelectItem value="google">Google</SelectItem>
+									<SelectItem value="ollama">Ollama (Local)</SelectItem>
 								</SelectContent>
 							</Select>
+						</div>
+
+						<div className="flex-1 space-y-2">
+							<Label>Model Name</Label>
+							<Select
+								value={form.name}
+								onValueChange={(v) => {
+									const selectedModel = DEFAULT_MODELS.find(
+										(m) => m.name === v,
+									);
+									if (selectedModel) {
+										setForm({
+											...form,
+											name: v,
+											provider: selectedModel.provider,
+											description: selectedModel.description,
+										});
+									} else {
+										setForm({ ...form, name: v });
+									}
+								}}
+							>
+								<SelectTrigger>
+									<SelectValue placeholder="Select a model" />
+								</SelectTrigger>
+								<SelectContent>
+									{DEFAULT_MODELS.map((m) => (
+										<SelectItem key={m.id} value={m.name}>
+											{m.name}
+										</SelectItem>
+									))}
+									<SelectItem value="custom">Custom Model</SelectItem>
+								</SelectContent>
+							</Select>
+							{form.name === "custom" && (
+								<Input
+									placeholder="Enter custom model name"
+									value={form.name === "custom" ? "" : form.name}
+									onChange={(e) => setForm({ ...form, name: e.target.value })}
+									className="mt-2"
+								/>
+							)}
 						</div>
 					</div>
 
 					<div className="space-y-2">
-						<Label>API Key</Label>
+						<Label>Description</Label>
 						<Input
-							placeholder="Enter API key"
-							value={form.apiKey}
-							onChange={(e) => setForm({ ...form, apiKey: e.target.value })}
+							placeholder="Enter model description"
+							value={form.description}
+							onChange={(e) =>
+								setForm({ ...form, description: e.target.value })
+							}
 						/>
 					</div>
+
+					{isLocalProvider ? (
+						<div className="space-y-2">
+							<Label>Base URL</Label>
+							<Input
+								placeholder="http://localhost:11434 (for Ollama)"
+								value={form.baseUrl}
+								onChange={(e) => setForm({ ...form, baseUrl: e.target.value })}
+							/>
+							<p className="text-muted-foreground text-xs">
+								Enter the base URL for your local model server
+							</p>
+						</div>
+					) : (
+						<div className="space-y-2">
+							<Label>API Key</Label>
+							<PasswordInput
+								placeholder="Enter API key"
+								value={form.apiKey}
+								onChange={(e) => setForm({ ...form, apiKey: e.target.value })}
+							/>
+							<p className="text-muted-foreground text-xs">
+								API keys are stored securely in your browser's local storage
+							</p>
+						</div>
+					)}
 
 					<div className="flex justify-end gap-2 pt-4">
 						<Button variant="outline" onClick={() => onOpenChange(false)}>
 							Cancel
 						</Button>
-						<Button onClick={() => onSubmit(form)}>
+						<Button
+							onClick={handleSubmit}
+							disabled={!form.name || !form.provider || !form.description}
+						>
 							{mode === "edit" ? "Save Changes" : "Add Model"}
 						</Button>
 					</div>

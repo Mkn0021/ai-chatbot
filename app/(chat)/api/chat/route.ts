@@ -23,7 +23,6 @@ import {
 	getChatById,
 	getMessageCountByUserId,
 	getMessagesByChatId,
-	getOrganizationModelInfo,
 	saveChat,
 	saveMessages,
 	updateChatTitleById,
@@ -31,6 +30,7 @@ import {
 } from "@/app/(chat)/actions";
 import { ChatMessage } from "@/types";
 import { convertToUIMessages, generateUUID } from "@/lib/utils";
+import { getOrganizationModelInfo } from "@/app/(organization)/actions";
 
 // POST - api/chat
 export async function POST(req: Request) {
@@ -48,15 +48,17 @@ export async function POST(req: Request) {
 			differenceInHours: 24,
 		});
 
-		const { messageLimit, chatModels } = await getOrganizationModelInfo({
+		const response = await getOrganizationModelInfo({
 			organizationId: session.user.organizationId!,
 		});
 
-		if (messageCount > messageLimit) {
+		if (messageCount > response.dailyMessageLimit) {
 			throw APIError.forbidden("You hit the rate limit, try again after 24hr");
 		}
 
-		if (!chatModels.some((model) => model.id === input.selectedChatModel)) {
+		if (
+			!response.models.some((model) => model.id === input.selectedChatModel)
+		) {
 			throw APIError.notFound(
 				`Model "${input.selectedChatModel}" is not available for your organization`,
 			);

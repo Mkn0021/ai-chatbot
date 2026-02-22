@@ -77,3 +77,18 @@ export function getTextFromMessage(message: ChatMessage | UIMessage): string {
 export function sanitizeText(text: string) {
 	return text.replace("<has_function_call>", "");
 }
+
+export const getApiKey = (modelId: string): string => {
+	if (typeof window === "undefined") return "";
+	return localStorage.getItem(`model_api_key_${modelId}`) || "";
+};
+
+export const setApiKey = (modelId: string, apiKey: string): void => {
+	if (typeof window === "undefined") return;
+	localStorage.setItem(`model_api_key_${modelId}`, apiKey);
+};
+
+export const removeApiKey = (modelId: string): void => {
+	if (typeof window === "undefined") return;
+	localStorage.removeItem(`model_api_key_${modelId}`);
+};
