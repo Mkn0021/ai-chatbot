@@ -43,7 +43,7 @@ export function Settings({ open, onOpenChange }: SettingsModalProps) {
 			<DialogTrigger className="w-full cursor-pointer text-left">
 				Settings
 			</DialogTrigger>
-			<DialogContent className="flex h-128 w-[90vw]! max-w-4xl! flex-col gap-0 rounded-lg p-0">
+			<DialogContent className="flex h-128 w-[90vw]! max-w-4xl! flex-col gap-0 p-0">
 				<div className="p-6 pb-4">
 					<DialogTitle className="text-foreground text-2xl">
 						Settings
