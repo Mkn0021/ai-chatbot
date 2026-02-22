@@ -41,6 +41,7 @@ import { Badge } from "@/components/ui/badge";
 import { DEFAULT_MODELS } from "@/lib/ai/models";
 import { PasswordInput } from "@/components/ui/password-input";
 import { fetcher, getApiKey, removeApiKey, setApiKey } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
 
 type ModelStatus = "active" | "inactive" | "error";
 
@@ -137,7 +138,7 @@ interface ChatModelsTableProps {
 const ChatModelsTable = ({ models, onEdit, mutate }: ChatModelsTableProps) => {
 	const handleDeleteModel = async (modelId: string) => {
 		try {
-			const response = await fetch(`/api/organization/models?id=${modelId}`, {
+			const response = await fetch(`/api/organization/model?id=${modelId}`, {
 				method: "DELETE",
 			});
 
@@ -416,7 +417,9 @@ function ModelDialog({
 							<Label>Provider</Label>
 							<Select
 								value={form.provider}
-								onValueChange={(v) => setForm({ ...form, provider: v })}
+								onValueChange={(v) =>
+									setForm({ ...form, provider: v, name: "", description: "" })
+								}
 							>
 								<SelectTrigger>
 									<SelectValue placeholder="Select a provider" />
@@ -432,15 +435,18 @@ function ModelDialog({
 						<div className="flex-1 space-y-2">
 							<Label>Model Name</Label>
 							<Select
-								value={form.name}
+								value={
+									DEFAULT_MODELS.find(
+										(m) => m.name === form.name && m.provider === form.provider,
+									)?.id || (form.name ? "custom" : "")
+								}
+								disabled={!form.provider}
 								onValueChange={(v) => {
-									const selectedModel = DEFAULT_MODELS.find(
-										(m) => m.name === v,
-									);
+									const selectedModel = DEFAULT_MODELS.find((m) => m.id === v);
 									if (selectedModel) {
 										setForm({
 											...form,
-											name: v,
+											name: selectedModel.name,
 											provider: selectedModel.provider,
 											description: selectedModel.description,
 										});
@@ -453,15 +459,19 @@ function ModelDialog({
 									<SelectValue placeholder="Select a model" />
 								</SelectTrigger>
 								<SelectContent>
-									{DEFAULT_MODELS.map((m) => (
-										<SelectItem key={m.id} value={m.name}>
+									{DEFAULT_MODELS.filter(
+										(m) => m.provider === form.provider,
+									).map((m) => (
+										<SelectItem key={m.id} value={m.id}>
 											{m.name}
 										</SelectItem>
 									))}
 									<SelectItem value="custom">Custom Model</SelectItem>
 								</SelectContent>
 							</Select>
-							{form.name === "custom" && (
+							{(DEFAULT_MODELS.find(
+								(m) => m.name === form.name && m.provider === form.provider,
+							)?.id || (form.name ? "custom" : "")) === "custom" && (
 								<Input
 									placeholder="Enter custom model name"
 									value={form.name === "custom" ? "" : form.name}
@@ -474,12 +484,13 @@ function ModelDialog({
 
 					<div className="space-y-2">
 						<Label>Description</Label>
-						<Input
+						<Textarea
 							placeholder="Enter model description"
 							value={form.description}
 							onChange={(e) =>
 								setForm({ ...form, description: e.target.value })
 							}
+							rows={3}
 						/>
 					</div>
 
