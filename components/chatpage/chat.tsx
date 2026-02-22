@@ -20,7 +20,12 @@ import { ChatHeader } from "./chat-header";
 import { Messages } from "./message/messages";
 import { MultimodalInput } from "./multimodal-input";
 import { getChatHistoryPaginationKey } from "./sidebar/sidebar-history";
-import { fetcher, fetchWithErrorHandlers, generateUUID } from "@/lib/utils";
+import {
+	fetcher,
+	fetchWithErrorHandlers,
+	generateUUID,
+	getApiKey,
+} from "@/lib/utils";
 
 export function Chat({
 	id,
@@ -107,6 +112,15 @@ export function Chat({
 						}),
 					);
 
+				const apiKey = getApiKey(currentModelIdRef.current);
+				const [provider] = currentModelIdRef.current.split("/");
+
+				if (provider !== "ollama" && !apiKey) {
+					toast.error(
+						`API key required for ${provider} models. Please set it in the settings.`,
+					);
+				}
+
 				return {
 					body: {
 						id: request.id,
@@ -115,6 +129,7 @@ export function Chat({
 							: { message: lastMessage }),
 						selectedChatModel: currentModelIdRef.current,
 						selectedVisibilityType: visibilityType,
+						apiKey,
 						...request.body,
 					},
 				};

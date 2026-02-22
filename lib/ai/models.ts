@@ -1,5 +1,5 @@
-import { openai } from "@ai-sdk/openai";
-import { google } from "@ai-sdk/google";
+import { createOpenAI } from "@ai-sdk/openai";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { ollama } from "ai-sdk-ollama";
 
 export type ChatModel = {
@@ -48,15 +48,25 @@ export const DEFAULT_MODELS: ChatModel[] = [
 	},
 ];
 
-export function getLanguageModel(modelId: string) {
+export function getLanguageModel(
+	modelId: string,
+	apiKey: string | undefined = "",
+) {
 	const [provider, model] = modelId.split("/");
 
 	switch (provider) {
 		case "openai":
-			return openai(model);
+			if (!apiKey || apiKey.trim() === "") {
+				throw new Error(`API key is required for OpenAI models`);
+			}
+			return createOpenAI({ apiKey })(model);
 
 		case "google":
-			return google(model);
+		case "gemini":
+			if (!apiKey || apiKey.trim() === "") {
+				throw new Error(`API key is required for Google models`);
+			}
+			return createGoogleGenerativeAI({ apiKey })(model);
 
 		case "ollama":
 			return ollama(model);

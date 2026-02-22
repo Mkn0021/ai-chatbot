@@ -92,3 +92,12 @@ export const removeApiKey = (modelId: string): void => {
 	if (typeof window === "undefined") return;
 	localStorage.removeItem(`model_api_key_${modelId}`);
 };
+
+export function generateModelId(provider: string, modelName: string): string {
+	const slug = modelName
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-|-$/g, "");
+
+	return `${provider.toLowerCase()}/${slug}`;
+}

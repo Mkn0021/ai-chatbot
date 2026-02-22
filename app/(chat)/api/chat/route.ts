@@ -64,6 +64,17 @@ export async function POST(req: Request) {
 			);
 		}
 
+		// Validate API key is provided for models that require it (not ollama)
+		const [provider] = input.selectedChatModel.split("/");
+		if (
+			provider !== "ollama" &&
+			(!input.apiKey || input.apiKey.trim() === "")
+		) {
+			throw APIError.badRequest(
+				"API key is required. Please set your API key in the settings.",
+			);
+		}
+
 		const isToolApprovalFlow = Boolean(input.messages);
 
 		const chat = await getChatById({ id: input.id });
@@ -86,7 +97,7 @@ export async function POST(req: Request) {
 			});
 			titlePromise = generateTitleFromUserMessage({
 				message: input.message,
-				chatModel: getLanguageModel(input.selectedChatModel),
+				chatModel: getLanguageModel(input.selectedChatModel, input.apiKey),
 			});
 		}
 
@@ -114,27 +125,45 @@ export async function POST(req: Request) {
 		const stream = createUIMessageStream({
 			originalMessages: isToolApprovalFlow ? uiMessages : undefined,
 			execute: async ({ writer: dataStream }) => {
-				const result = streamText({
-					model: getLanguageModel(input.selectedChatModel),
-					system: SYSTEM_PROMPT,
-					messages: modelMessages,
-					stopWhen: stepCountIs(5),
-					experimental_activeTools: ["sqlQuery"],
-					tools: {
-						sqlQuery: sqlQueryTool({ dataStream, session }),
-					},
-					experimental_telemetry: {
-						isEnabled: false,
-						functionId: "stream-text",
-					},
-				});
+				try {
+					const result = streamText({
+						model: getLanguageModel(input.selectedChatModel, input.apiKey),
+						system: SYSTEM_PROMPT,
+						messages: modelMessages,
+						stopWhen: stepCountIs(5),
+						experimental_activeTools: ["sqlQuery"],
+						tools: {
+							sqlQuery: sqlQueryTool({ dataStream, session }),
+						},
+						experimental_telemetry: {
+							isEnabled: false,
+							functionId: "stream-text",
+						},
+					});
 
-				dataStream.merge(result.toUIMessageStream({ sendReasoning: true }));
+					dataStream.merge(result.toUIMessageStream({ sendReasoning: true }));
 
-				if (titlePromise) {
-					const title = await titlePromise;
-					dataStream.write({ type: "data-chat-title", data: title });
-					updateChatTitleById({ chatId: input.id, title });
+					if (titlePromise) {
+						const title = await titlePromise;
+						dataStream.write({ type: "data-chat-title", data: title });
+						updateChatTitleById({ chatId: input.id, title });
+					}
+				} catch (error) {
+					// Handle API key validation errors from AI providers
+					const errorMessage =
+						error instanceof Error ? error.message : String(error);
+					if (
+						errorMessage.includes("API key") ||
+						errorMessage.includes("apiKey") ||
+						errorMessage.includes("401") ||
+						errorMessage.includes("Unauthorized") ||
+						errorMessage.includes("Invalid authentication")
+					) {
+						throw APIError.unauthorized(
+							"Invalid API key. Please check your API key in the settings.",
+						);
+					}
+					throw error;
 				}
 			},
 			generateId: generateUUID,

@@ -21,6 +21,7 @@ export const ChatStreamSchema = z.object({
 	messages: z.array(MessageSchema).optional(), // For Tools
 	selectedChatModel: z.string(),
 	selectedVisibilityType: ChatSelectSchema.shape.visibility,
+	apiKey: z.string().optional(), // Optional because ollama doesn't need it
 });
 
 export const GetChatsHistorySchema = {
