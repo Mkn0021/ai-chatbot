@@ -1,4 +1,11 @@
-import { pgTable, text, integer, timestamp } from "drizzle-orm/pg-core";
+import {
+	pgTable,
+	text,
+	integer,
+	timestamp,
+	jsonb,
+	boolean,
+} from "drizzle-orm/pg-core";
 
 export const organization = pgTable("organizations", {
 	id: text("id").primaryKey(),
@@ -22,6 +29,22 @@ export const organizationModel = pgTable("organization_models", {
 	description: text("description").notNull(),
 	baseUrl: text("base_url"),
 	status: text("status").default("active"),
+	createdAt: timestamp("created_at").defaultNow(),
+	updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const databaseConnection = pgTable("database_connections", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id")
+		.notNull()
+		.references(() => organization.id, {
+			onDelete: "cascade",
+		}),
+	connectionString: text("connection_string").notNull(),
+	name: text("name"),
+	tablesData: jsonb("tables_data"), // Stores array of {table_schema, table_name, columns}
+	selectedTables: jsonb("selected_tables").$type<string[]>().default([]), // Array like ['public.users', 'public.products']
+	isActive: boolean("is_active").default(true),
 	createdAt: timestamp("created_at").defaultNow(),
 	updatedAt: timestamp("updated_at").defaultNow(),
 });

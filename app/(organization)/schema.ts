@@ -2,7 +2,11 @@ import "server-only";
 
 import { z } from "zod";
 import { createSelectSchema, createInsertSchema } from "drizzle-zod";
-import { organization, organizationModel } from "@/lib/db/schemas";
+import {
+	organization,
+	organizationModel,
+	databaseConnection,
+} from "@/lib/db/schemas";
 
 const OrgSelectSchema = createSelectSchema(organization);
 const OrgInsertSchema = createInsertSchema(organization).omit({
@@ -47,3 +51,37 @@ export type UpdateOrganizationModelInput = z.infer<
 	typeof UpdateOrganizationModelSchema.body
 >;
 export type OrganizationModel = z.infer<typeof OrgModelSelectSchema>;
+
+export const ConnectDatabaseSchema = {
+	body: z.object({
+		connectionString: z.string().min(1, "Connection string is required"),
+		name: z.string().optional(),
+	}),
+};
+
+export const UpdateTableSelectionSchema = {
+	body: z.object({
+		selectedTables: z.array(z.string()),
+	}),
+};
+
+export type ConnectDatabaseInput = z.infer<typeof ConnectDatabaseSchema.body>;
+
+export type UpdateTableSelectionInput = z.infer<
+	typeof UpdateTableSelectionSchema.body
+>;
+
+const DbConnectionSelectSchema = createSelectSchema(databaseConnection);
+export type DatabaseConnection = z.infer<typeof DbConnectionSelectSchema>;
+
+export interface DatabaseColumn {
+	column_name: string;
+	data_type: string;
+}
+
+export interface DatabaseTable {
+	table_schema: string;
+	table_name: string;
+	columns: DatabaseColumn[];
+	isSelected?: boolean;
+}

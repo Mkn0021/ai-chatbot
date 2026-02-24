@@ -10,12 +10,17 @@ import {
 	organization,
 	organizationModel,
 	user as userTable,
+	databaseConnection,
 } from "@/lib/db/schemas";
 import {
 	UpdateOrganizationInput,
 	CreateOrganizationModelInput,
 	UpdateOrganizationModelInput,
+	ConnectDatabaseInput,
+	DatabaseTable,
+	UpdateTableSelectionInput,
 } from "./schema";
+import { Pool } from "pg";
 
 export async function createUserOrganization({ user }: { user: User }) {
 	try {
@@ -187,4 +192,128 @@ export async function getOrganizationModelInfo({
 		models,
 		dailyMessageLimit: org.dailyMessageLimit || 100,
 	};
+}
+
+export async function connectToDatabase(
+	organizationId: string,
+	data: ConnectDatabaseInput,
+) {
+	const { connectionString, name } = data;
+	let pool: Pool | null = null;
+
+	try {
+		pool = new Pool({
+			connectionString,
+			connectionTimeoutMillis: 8000,
+			max: 1,
+			idleTimeoutMillis: 3000,
+		});
+
+		await pool.query("SELECT 1");
+
+		const tablesQuery = `
+			SELECT
+				table_schema,
+				table_name,
+				json_agg(column_obj ORDER BY ordinal_position) AS columns
+			FROM (
+				SELECT DISTINCT
+					table_schema,
+					table_name,
+					column_name,
+					data_type,
+					ordinal_position,
+					jsonb_build_object(
+						'column_name', column_name,
+						'data_type', data_type
+					) AS column_obj
+				FROM information_schema.columns
+				WHERE table_schema NOT IN ('pg_catalog', 'information_schema', 'drizzle')
+			) t
+			GROUP BY table_schema, table_name
+			ORDER BY table_schema, table_name;
+		`;
+
+		const result = await pool.query(tablesQuery);
+		const tablesData: DatabaseTable[] = result.rows;
+
+		const [connection] = await db
+			.insert(databaseConnection)
+			.values({
+				id: generateUUID(),
+				organizationId,
+				connectionString,
+				name: name || "Database Connection",
+				tablesData: tablesData,
+				selectedTables: [],
+				isActive: true,
+			})
+			.returning();
+
+		if (!connection) {
+			throw APIError.internal("Failed to save connection");
+		}
+
+		return {
+			connection,
+			tables: tablesData.map((t) => ({ ...t, isSelected: false })),
+		};
+	} catch (error: any) {
+		throw APIError.badRequest(error.message || "Failed to connect to database");
+	} finally {
+		if (pool) {
+			await pool.end();
+		}
+	}
+}
+
+export async function getDatabaseConnection(organizationId: string) {
+	const connection = await db.query.databaseConnection.findFirst({
+		where: eq(databaseConnection.organizationId, organizationId),
+	});
+
+	if (!connection) {
+		return null;
+	}
+
+	const tablesData = (connection.tablesData as DatabaseTable[]) || [];
+	const selectedTables = (connection.selectedTables as string[]) || [];
+
+	const tables = tablesData.map((t) => ({
+		...t,
+		isSelected: selectedTables.includes(`${t.table_schema}.${t.table_name}`),
+	}));
+
+	return {
+		connection: {
+			id: connection.id,
+			name: connection.name,
+			isActive: connection.isActive,
+		},
+		tables,
+	};
+}
+
+export async function updateTableSelection(
+	organizationId: string,
+	data: UpdateTableSelectionInput,
+) {
+	const connection = await db.query.databaseConnection.findFirst({
+		where: eq(databaseConnection.organizationId, organizationId),
+	});
+
+	if (!connection) {
+		throw APIError.notFound("No database connection found");
+	}
+
+	const [updated] = await db
+		.update(databaseConnection)
+		.set({
+			selectedTables: data.selectedTables as any,
+			updatedAt: new Date(),
+		})
+		.where(eq(databaseConnection.id, connection.id))
+		.returning();
+
+	return updated;
 }

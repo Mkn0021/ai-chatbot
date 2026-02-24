@@ -1,5 +1,7 @@
 "use client";
 
+import useSWR from "swr";
+import { toast } from "sonner";
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -9,8 +11,7 @@ import {
 	Link as LinkIcon,
 	CheckCircle2,
 	XCircle,
-	MoreHorizontal,
-	Trash,
+	Save,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -21,27 +22,43 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { toast } from "sonner";
+
+interface DatabaseColumn {
+	column_name: string;
+	data_type: string;
+}
 
 interface DatabaseTable {
-	id: string;
-	name: string;
-	schema: string;
-	rowCount: number;
-	selected: boolean;
+	table_schema: string;
+	table_name: string;
+	columns: DatabaseColumn[];
+	isSelected?: boolean;
 }
+
+interface ConnectionData {
+	connection: {
+		id: string;
+		name: string | null;
+		isActive: boolean | null;
+	};
+	tables: DatabaseTable[];
+}
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export function DatabaseSettings() {
 	const [connectionString, setConnectionString] = useState("");
-	const [isConnected, setIsConnected] = useState(false);
 	const [isConnecting, setIsConnecting] = useState(false);
-	const [tables, setTables] = useState<DatabaseTable[]>([]);
+	const [localTables, setLocalTables] = useState<DatabaseTable[]>([]);
+
+	const { data: connectionData, mutate } = useSWR<{
+		success: boolean;
+		data: ConnectionData | null;
+	}>("/api/organization/database/connect", fetcher);
+
+	const isConnected = connectionData?.data !== null;
+	const savedTables = connectionData?.data?.tables || [];
+	const displayTables = localTables.length > 0 ? localTables : savedTables;
 
 	const handleConnect = async () => {
 		if (!connectionString) {
@@ -51,61 +68,72 @@ export function DatabaseSettings() {
 
 		setIsConnecting(true);
 
-		// Simulating database connection
-		setTimeout(() => {
-			setIsConnected(true);
+		try {
+			const response = await fetch("/api/organization/database/connect", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ connectionString }),
+			});
+
+			const result = await response.json();
+
+			if (!response.ok) {
+				toast.error(result.error || "Failed to connect to database");
+				setIsConnecting(false);
+				return;
+			}
+
+			mutate();
+			setConnectionString("");
+			setLocalTables([]);
+			toast.success("Connected and saved successfully");
+		} catch (error: any) {
+			toast.error(error.message || "Failed to connect to database");
+		} finally {
 			setIsConnecting(false);
-			toast.success("Connected successfully");
-
-			// Simulating fetched tables
-			setTables([
-				{
-					id: "1",
-					name: "users",
-					schema: "public",
-					rowCount: 1543,
-					selected: false,
-				},
-				{
-					id: "2",
-					name: "products",
-					schema: "public",
-					rowCount: 892,
-					selected: false,
-				},
-				{
-					id: "3",
-					name: "orders",
-					schema: "public",
-					rowCount: 3421,
-					selected: false,
-				},
-			]);
-		}, 1500);
-	};
-
-	const handleDisconnect = () => {
-		setIsConnected(false);
-		setTables([]);
-		setConnectionString("");
-		toast.info("Disconnected from database");
+		}
 	};
 
 	const handleToggleAccess = (table: DatabaseTable) => {
-		setTables(
-			tables.map((t) =>
-				t.id === table.id ? { ...t, selected: !t.selected } : t,
-			),
+		const updatedTables = displayTables.map((t) =>
+			t.table_schema === table.table_schema && t.table_name === table.table_name
+				? { ...t, isSelected: !t.isSelected }
+				: t,
 		);
-		toast.success(
-			`${table.name} is now ${!table.selected ? "accessible" : "restricted"}`,
-		);
+		setLocalTables(updatedTables);
 	};
 
-	const handleRemoveTable = (id: string) => {
-		setTables(tables.filter((t) => t.id !== id));
-		toast.success("Table removed");
+	const handleSaveSelection = async () => {
+		const selectedTables = displayTables
+			.filter((t) => t.isSelected)
+			.map((t) => `${t.table_schema}.${t.table_name}`);
+
+		try {
+			const response = await fetch("/api/organization/database/connect", {
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ selectedTables }),
+			});
+
+			if (!response.ok) {
+				const result = await response.json();
+				toast.error(result.error || "Failed to save selection");
+				return;
+			}
+
+			mutate();
+			setLocalTables([]);
+			toast.success("Table selection saved");
+		} catch (error: any) {
+			toast.error(error.message || "Failed to save selection");
+		}
 	};
+
+	const hasChanges = localTables.length > 0;
 
 	return (
 		<div>
@@ -128,25 +156,14 @@ export function DatabaseSettings() {
 							onChange={(e) => setConnectionString(e.target.value)}
 							disabled={isConnected}
 						/>
-						{!isConnected ? (
-							<Button
-								onClick={handleConnect}
-								disabled={!connectionString || isConnecting}
-								className="gap-2"
-							>
-								<LinkIcon className="h-4 w-4" />
-								{isConnecting ? "Connecting..." : "Connect"}
-							</Button>
-						) : (
-							<Button
-								onClick={handleDisconnect}
-								variant="outline"
-								className="gap-2"
-							>
-								<XCircle className="h-4 w-4" />
-								Disconnect
-							</Button>
-						)}
+						<Button
+							onClick={handleConnect}
+							disabled={!connectionString || isConnecting || isConnected}
+							className="gap-2"
+						>
+							<LinkIcon className="h-4 w-4" />
+							{isConnecting ? "Connecting..." : "Connect & Save"}
+						</Button>
 					</div>
 					{isConnected && (
 						<div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
@@ -155,13 +172,19 @@ export function DatabaseSettings() {
 						</div>
 					)}
 				</div>
+
+				{isConnected && hasChanges && (
+					<Button onClick={handleSaveSelection} className="w-full gap-2">
+						<Save className="h-4 w-4" />
+						Save Table Selection
+					</Button>
+				)}
 			</div>
 
 			<DatabaseTablesTable
-				tables={tables}
+				tables={displayTables}
 				isConnected={isConnected}
 				onToggleAccess={handleToggleAccess}
-				onRemove={handleRemoveTable}
 			/>
 		</div>
 	);
@@ -171,17 +194,15 @@ interface DatabaseTablesTableProps {
 	tables: DatabaseTable[];
 	isConnected: boolean;
 	onToggleAccess: (table: DatabaseTable) => void;
-	onRemove: (id: string) => void;
 }
 
 const DatabaseTablesTable = ({
 	tables,
 	isConnected,
 	onToggleAccess,
-	onRemove,
 }: DatabaseTablesTableProps) => {
-	const getStatusVariant = (selected: boolean) => {
-		return selected ? "default" : "secondary";
+	const getStatusVariant = (isSelected?: boolean) => {
+		return isSelected ? "default" : "secondary";
 	};
 
 	return (
@@ -191,9 +212,9 @@ const DatabaseTablesTable = ({
 					<TableRow>
 						<TableHead>Table Name</TableHead>
 						<TableHead>Schema</TableHead>
-						<TableHead>Row Count</TableHead>
+						<TableHead>Columns</TableHead>
 						<TableHead>Status</TableHead>
-						<TableHead className="w-[60px] text-right">Actions</TableHead>
+						<TableHead className="w-[100px] text-right">Actions</TableHead>
 					</TableRow>
 				</TableHeader>
 
@@ -225,54 +246,50 @@ const DatabaseTablesTable = ({
 					)}
 
 					{tables.map((table) => (
-						<TableRow key={table.id}>
+						<TableRow key={`${table.table_schema}.${table.table_name}`}>
 							<TableCell>
 								<div className="flex items-center gap-2">
 									<Database className="text-muted-foreground h-4 w-4" />
-									<span className="font-medium">{table.name}</span>
+									<span className="font-medium">{table.table_name}</span>
 								</div>
 							</TableCell>
 
 							<TableCell className="text-muted-foreground">
-								<Badge variant="outline">{table.schema}</Badge>
+								<Badge variant="outline">{table.table_schema}</Badge>
 							</TableCell>
 
-							<TableCell className="text-muted-foreground">
-								{table.rowCount.toLocaleString()} rows
+							<TableCell className="text-muted-foreground text-sm">
+								{table.columns.length} columns
 							</TableCell>
 
 							<TableCell>
 								<Badge
-									variant={getStatusVariant(table.selected)}
+									variant={getStatusVariant(table.isSelected)}
 									className="capitalize"
 								>
-									{table.selected ? "Accessible" : "Restricted"}
+									{table.isSelected ? "Accessible" : "Restricted"}
 								</Badge>
 							</TableCell>
 
 							<TableCell className="text-right">
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<Button variant="ghost" size="icon">
-											<MoreHorizontal className="h-4 w-4" />
-										</Button>
-									</DropdownMenuTrigger>
-
-									<DropdownMenuContent align="end">
-										<DropdownMenuItem onClick={() => onToggleAccess(table)}>
-											<CheckCircle2 className="mr-2 h-4 w-4" />
-											{table.selected ? "Restrict Access" : "Grant Access"}
-										</DropdownMenuItem>
-
-										<DropdownMenuItem
-											onClick={() => onRemove(table.id)}
-											className="text-destructive focus:text-destructive"
-										>
-											<Trash className="text-destructive mr-2 h-4 w-4" />
-											Remove
-										</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={() => onToggleAccess(table)}
+									className="gap-2"
+								>
+									{table.isSelected ? (
+										<>
+											<XCircle className="h-4 w-4" />
+											Restrict
+										</>
+									) : (
+										<>
+											<CheckCircle2 className="h-4 w-4" />
+											Grant
+										</>
+									)}
+								</Button>
 							</TableCell>
 						</TableRow>
 					))}
