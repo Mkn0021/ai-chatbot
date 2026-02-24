@@ -1,5 +1,5 @@
 import {
-	connectToDatabase,
+	getDatabaseTables,
 	getDatabaseConnection,
 	updateTableSelection,
 } from "@/app/(organization)/actions";
@@ -18,7 +18,7 @@ export const POST = asyncHandler(async (_, context, validatedData) => {
 		throw APIError.unauthorized("No organization found");
 	}
 
-	const result = await connectToDatabase(organizationId, validatedData.body);
+	const result = await getDatabaseTables(organizationId, validatedData.body);
 
 	return {
 		data: result,

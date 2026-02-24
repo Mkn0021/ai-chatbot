@@ -4,7 +4,6 @@ import db from "@/lib/db";
 import { User } from "better-auth";
 import APIError from "@/lib/api/error";
 import { generateUUID, generateModelId } from "@/lib/utils";
-import { DEFAULT_MODELS } from "@/lib/ai/models";
 import { eq } from "drizzle-orm/sql/expressions/conditions";
 import {
 	organization,
@@ -31,7 +30,6 @@ export async function createUserOrganization({ user }: { user: User }) {
 					id: generateUUID(),
 					name: `${user.name}'s Organization`,
 					dailyMessageLimit: 1000,
-					defaultModelId: DEFAULT_MODELS[0].id,
 				})
 				.returning();
 
@@ -194,7 +192,7 @@ export async function getOrganizationModelInfo({
 	};
 }
 
-export async function connectToDatabase(
+export async function getDatabaseTables(
 	organizationId: string,
 	data: ConnectDatabaseInput,
 ) {

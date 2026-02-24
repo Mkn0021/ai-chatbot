@@ -11,8 +11,6 @@ export const organization = pgTable("organizations", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
 	dailyMessageLimit: integer("daily_message_limit").default(1000),
-	defaultModelId: text("default_model_id"),
-	databaseUrl: text("database_url"),
 	createdAt: timestamp("created_at").defaultNow(),
 });
 

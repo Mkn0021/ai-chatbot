@@ -25,7 +25,6 @@ export type UpdateOrganizationInput = z.infer<
 export type Organization = z.infer<typeof OrgSelectSchema>;
 export type OrganizationFormData = Pick<Organization, "name"> & {
 	dailyMessageLimit: number;
-	defaultModelId: string;
 };
 
 const OrgModelSelectSchema = createSelectSchema(organizationModel);

@@ -31,13 +31,10 @@ import {
 	chat,
 	type DBMessage,
 	message,
-	organization,
-	organizationModel,
+	databaseConnection,
 	stream,
 	vote,
 } from "@/lib/db/schemas";
-
-const DAILY_MESSAGE_LIMIT = 30;
 
 export async function saveChat({
 	id,
@@ -471,27 +468,21 @@ export async function executeSqlQuery({
 			);
 		}
 
-		const [org] = await db
-			.select({
-				databaseUrl: organization.databaseUrl,
-			})
-			.from(organization)
-			.where(eq(organization.id, organizationId))
-			.limit(1);
+		const connection = await db.query.databaseConnection.findFirst({
+			where: eq(databaseConnection.organizationId, organizationId),
+		});
 
-		if (!org) {
+		if (!connection) {
 			throw APIError.notFound(
-				`Organization with ID ${organizationId} not found`,
+				"No database connection configured for this organization",
 			);
 		}
 
-		if (!org.databaseUrl) {
-			throw APIError.badRequest(
-				"Database URL is not configured for this organization",
-			);
+		if (!connection.isActive) {
+			throw APIError.badRequest("Database connection is not active");
 		}
 
-		const databaseUrl = org.databaseUrl;
+		const databaseUrl = connection.connectionString;
 
 		const trimmedQuery = sqlQuery.trim();
 		const upperQuery = trimmedQuery.toUpperCase();

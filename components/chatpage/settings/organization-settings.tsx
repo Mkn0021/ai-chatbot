@@ -36,7 +36,6 @@ export function OrganizationSettings() {
 		const data = {
 			name: String(formData.get("name") ?? ""),
 			dailyMessageLimit: Number(formData.get("dailyMessageLimit") ?? 0),
-			defaultModelId: String(formData.get("defaultModelId") ?? ""),
 		};
 
 		setIsUpdating(true);
@@ -107,40 +106,16 @@ export function OrganizationSettings() {
 					/>
 				</div>
 
-				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-					<div className="space-y-2">
-						<Label htmlFor="dailyMessageLimit">Daily Message Limit</Label>
-						<Input
-							id="dailyMessageLimit"
-							name="dailyMessageLimit"
-							type="number"
-							defaultValue={organization.dailyMessageLimit ?? 1000}
-							placeholder="e.g., 1000"
-							disabled={isUpdating}
-						/>
-					</div>
-
-					<div className="space-y-2">
-						<Label htmlFor="defaultModelId">Default Model</Label>
-
-						<Select
-							name="defaultModelId"
-							defaultValue={organization.defaultModelId ?? DEFAULT_MODELS[0].id}
-							disabled={isUpdating}
-						>
-							<SelectTrigger id="defaultModelId">
-								<SelectValue placeholder="Select a default model" />
-							</SelectTrigger>
-
-							<SelectContent>
-								{DEFAULT_MODELS.map((model) => (
-									<SelectItem key={model.id} value={model.id}>
-										{model.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
+				<div className="space-y-2">
+					<Label htmlFor="dailyMessageLimit">Daily Message Limit</Label>
+					<Input
+						id="dailyMessageLimit"
+						name="dailyMessageLimit"
+						type="number"
+						defaultValue={organization.dailyMessageLimit ?? 1000}
+						placeholder="e.g., 1000"
+						disabled={isUpdating}
+					/>
 				</div>
 
 				<div className="flex w-full justify-center pt-4">
