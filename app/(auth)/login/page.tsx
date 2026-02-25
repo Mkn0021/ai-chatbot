@@ -11,7 +11,7 @@ import {
 
 export default function Login() {
 	return (
-		<div className="relative flex h-screen overflow-y-hidden font-sans">
+		<div className="relative flex max-h-screen overflow-y-hidden font-sans">
 			<div className="flex h-full w-full xl:mx-12">
 				<div
 					className={cn(

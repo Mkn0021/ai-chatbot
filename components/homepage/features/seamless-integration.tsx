@@ -21,7 +21,7 @@ export function DotBackground({ children }: { children: React.ReactNode }) {
 					"bg-size-[20px_20px]",
 					"bg-[radial-gradient(#d4d4d4_1px,transparent_1px)]",
 					"dark:bg-[radial-gradient(#404040_1px,transparent_1px)]",
-					"mask-t-from-90% mask-l-from-90%",
+					"mask-radial-from-5%",
 				)}
 			/>
 			{children}

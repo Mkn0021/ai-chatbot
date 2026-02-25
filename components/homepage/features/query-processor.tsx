@@ -5,7 +5,7 @@ import { Database, Sparkles, BarChart3, FileCode } from "lucide-react";
 
 export function QueryProcessor() {
 	return (
-		<Circle className="size-90 mask-b-from-30%">
+		<Circle className="size-90 scale-90 mask-b-from-30% sm:scale-100">
 			<Circle className="size-70" variant="secondary" />
 			<Circle className="size-45" />
 			<Circle className="size-25" variant="secondary" />

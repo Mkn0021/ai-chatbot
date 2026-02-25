@@ -1,6 +1,5 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import { Circle } from "./data_visualization";
 import { Icons } from "@/components/ui/icons";
 import { AnimatedList } from "@/components/ui/animated-list";
 import {
@@ -49,16 +48,11 @@ export function RealtimeUpdates() {
 	return (
 		<div className="mt-6 h-full w-full rounded-lg p-4 px-2 md:px-10">
 			<div className="h-full w-full rounded-xl border border-gray-200 bg-white p-4">
-				<div className="mb-6 flex items-center gap-2">
-					<Circle variant="red" />
-					<Circle variant="orange" />
-					<Circle variant="green" />
-				</div>
-				<div className="flex h-full flex-col gap-4 md:flex-row">
-					<SectionSkeleton>
+				<div className="flex h-full flex-row gap-4">
+					<SectionSkeleton className="hidden sm:block">
 						<ProfileSection />
 					</SectionSkeleton>
-					<SectionSkeleton className="flex-1">
+					<SectionSkeleton className="flex-1 mask-b-from-30% p-1 sm:p-2">
 						<NotificationList notifications={notifications} />
 					</SectionSkeleton>
 				</div>

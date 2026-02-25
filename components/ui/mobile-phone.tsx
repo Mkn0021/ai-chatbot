@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 export const MobilePhone = ({ children }: { children?: React.ReactNode }) => {
 	return (
-		<div className="relative mx-auto h-150 w-75 md:h-170 md:w-85">
+		<div className="relative mx-auto h-150 w-full max-w-85 px-6 md:h-170">
 			<div className="absolute inset-0 rounded-[50px] border-14 border-black bg-neutral-100 shadow-xl">
 				<PunchHoleCamera />
 				{children}

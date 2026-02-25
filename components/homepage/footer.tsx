@@ -7,7 +7,7 @@ export const Footer = () => {
 		<footer className="m-10 mx-auto w-full max-w-7xl rounded-xl bg-gray-50 px-8 pt-20 pb-8">
 			<div className="flex flex-col justify-between gap-12 md:flex-row">
 				<div className="flex flex-col items-start">
-					<Logo />
+					<Logo className="p-0" />
 					<h2 className="mt-8 max-w-md text-2xl font-medium">
 						Connect any database. Use any AI model. Get insights in seconds.
 					</h2>
@@ -48,7 +48,6 @@ export const Footer = () => {
 					/>
 				</div>
 			</div>
-			<MadeWithLove />
 		</footer>
 	);
 };
@@ -57,7 +56,7 @@ const FooterColumn = ({ title, items }: { title: string; items: string[] }) => {
 	return (
 		<div className="space-y-6">
 			<h3 className="font-semibold">{title}</h3>
-			<ul className="space-y-3">
+			<ul className="grid grid-cols-2 justify-evenly gap-2 sm:space-y-1 md:grid-cols-1">
 				{items.map((item, index) => (
 					<li
 						key={index}

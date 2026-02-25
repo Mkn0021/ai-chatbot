@@ -6,26 +6,24 @@ import { MobilePhone } from "@/components/ui/mobile-phone";
 export const HeroSection = () => {
 	return (
 		<section className="relative mx-auto my-2 flex max-w-7xl flex-col items-center justify-center overflow-hidden rounded-b-3xl bg-linear-to-t from-[rgba(247,135,67,1)] via-[rgba(255,244,239,1)] to-[rgba(255,255,255,1)] px-4 pt-32 md:my-20 md:px-8">
-			<div className="relative z-20 mx-auto mb-4 max-w-6xl text-center text-4xl font-semibold tracking-tight text-balance text-gray-700 md:text-7xl">
-				<span className="inline-block align-top text-balance decoration-inherit">
+			<h1 className="relative z-20 mx-auto mb-4 max-w-6xl text-center text-4xl font-semibold tracking-tight text-balance text-gray-700 md:text-7xl">
+				<span className="inline-block align-top leading-[0.5] text-balance decoration-inherit md:leading-[0.8]">
 					<HeroHeading title="Build " cta_title="Personalized AI" />
-					<HeroHeading
-						title="with your own "
-						cta_title="Data"
-						className="-mt-2"
-					/>
+					<HeroHeading title="with Your Own " cta_title="Data" />
 				</span>
-			</div>
+			</h1>
 			<SubHeading>
 				Create AI that understands your data, your schema, and your workflows.
 				<br />
 				Run locally or in the cloud with full control.
 			</SubHeading>
-			<div className="z-10 mt-6 mb-8 flex w-full flex-col items-center justify-center gap-4 px-4 sm:mt-8 sm:mb-10 sm:flex-row sm:px-8 md:mb-20">
-				<Button size="lg" asChild>
-					<Link href="/login">Get Started</Link>
-				</Button>
-			</div>
+			<Button
+				size="lg"
+				asChild
+				className="z-10 mt-6 mb-8 flex w-full flex-col items-center justify-center gap-4 px-4 py-6 sm:mt-8 sm:mb-10 sm:w-auto sm:flex-row sm:px-8 md:mb-20"
+			>
+				<Link href="/login">Get Started</Link>
+			</Button>
 			<div className="relative min-h-84 w-full pt-8">
 				<div className="absolute top-0 right-0 left-0 z-10">
 					<MobilePhone />
