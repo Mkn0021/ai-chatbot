@@ -93,6 +93,7 @@ const AuthForm: React.FC = () => {
 					name: signupValues.name,
 					email: signupValues.email,
 					password: signupValues.password,
+					organizationId: "",
 					...formConfig,
 				});
 			} else {
