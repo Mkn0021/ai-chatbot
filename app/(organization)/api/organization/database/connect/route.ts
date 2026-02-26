@@ -2,6 +2,7 @@ import {
 	getDatabaseTables,
 	getDatabaseConnection,
 	updateTableSelection,
+	deleteDatabaseConnection,
 } from "@/app/(organization)/actions";
 import {
 	ConnectDatabaseSchema,
@@ -57,3 +58,18 @@ export const PUT = asyncHandler(async (_, context, validatedData) => {
 		message: "Table selection updated",
 	};
 }, UpdateTableSelectionSchema);
+
+// DELETE - api/organization/database/connect
+export const DELETE = asyncHandler(async (_, context) => {
+	const organizationId = context.session?.user.organizationId;
+
+	if (!organizationId) {
+		throw APIError.unauthorized("No organization found");
+	}
+
+	await deleteDatabaseConnection(organizationId);
+
+	return {
+		message: "Database disconnected successfully",
+	};
+});

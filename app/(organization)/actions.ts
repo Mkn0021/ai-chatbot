@@ -315,3 +315,17 @@ export async function updateTableSelection(
 
 	return updated;
 }
+
+export async function deleteDatabaseConnection(organizationId: string) {
+	const connection = await db.query.databaseConnection.findFirst({
+		where: eq(databaseConnection.organizationId, organizationId),
+	});
+
+	if (!connection) {
+		throw APIError.notFound("No database connection found");
+	}
+
+	await db
+		.delete(databaseConnection)
+		.where(eq(databaseConnection.id, connection.id));
+}

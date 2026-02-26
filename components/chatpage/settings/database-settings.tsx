@@ -12,6 +12,7 @@ import {
 	CheckCircle2,
 	XCircle,
 	Save,
+	Loader2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -96,6 +97,31 @@ export function DatabaseSettings() {
 		}
 	};
 
+	const handleDisconnect = async () => {
+		setIsConnecting(true);
+
+		try {
+			const response = await fetch("/api/organization/database/connect", {
+				method: "DELETE",
+			});
+
+			const result = await response.json();
+
+			if (!response.ok) {
+				toast.error(result.error || "Failed to disconnect database");
+				return;
+			}
+
+			mutate();
+			setLocalTables([]);
+			toast.success("Database disconnected successfully");
+		} catch (error: any) {
+			toast.error(error.message || "Failed to disconnect database");
+		} finally {
+			setIsConnecting(false);
+		}
+	};
+
 	const handleToggleAccess = (table: DatabaseTable) => {
 		const updatedTables = displayTables.map((t) =>
 			t.table_schema === table.table_schema && t.table_name === table.table_name
@@ -154,15 +180,30 @@ export function DatabaseSettings() {
 							placeholder="postgresql://user:password@host:port/database"
 							value={connectionString}
 							onChange={(e) => setConnectionString(e.target.value)}
-							disabled={isConnected}
+							disabled={isConnected || isConnecting}
 						/>
 						<Button
-							onClick={handleConnect}
-							disabled={!connectionString || isConnecting || isConnected}
+							onClick={isConnected ? handleDisconnect : handleConnect}
+							disabled={isConnecting || (!isConnected && !connectionString)}
 							className="gap-2"
+							variant={isConnected ? "destructive" : "secondary"}
 						>
-							<LinkIcon className="h-4 w-4" />
-							{isConnecting ? "Connecting..." : "Connect & Save"}
+							{isConnecting ? (
+								<Loader2 className="h-4 w-4 animate-spin" />
+							) : isConnected ? (
+								<XCircle className="h-4 w-4" />
+							) : (
+								<LinkIcon className="h-4 w-4" />
+							)}
+							<span className="hidden sm:inline">
+								{isConnecting
+									? isConnected
+										? "Disconnecting..."
+										: "Connecting..."
+									: isConnected
+										? "Disconnect"
+										: "Connect & Save"}
+							</span>
 						</Button>
 					</div>
 					{isConnected && (
@@ -206,25 +247,22 @@ const DatabaseTablesTable = ({
 	};
 
 	return (
-		<div className="mt-4 overflow-hidden rounded-lg border">
+		<div className="mt-4 overflow-x-auto rounded-lg border">
 			<Table>
 				<TableHeader>
 					<TableRow>
 						<TableHead>Table Name</TableHead>
-						<TableHead>Schema</TableHead>
-						<TableHead>Columns</TableHead>
-						<TableHead>Status</TableHead>
-						<TableHead className="w-[100px] text-right">Actions</TableHead>
+						<TableHead className="hidden sm:table-cell">Schema</TableHead>
+						<TableHead className="hidden md:table-cell">Columns</TableHead>
+						<TableHead className="hidden sm:table-cell">Status</TableHead>
+						<TableHead className="text-center">Actions</TableHead>
 					</TableRow>
 				</TableHeader>
 
 				<TableBody>
 					{tables.length === 0 && (
 						<TableRow>
-							<TableCell
-								colSpan={5}
-								className="text-muted-foreground py-8 text-center"
-							>
+							<TableCell className="text-muted-foreground py-8 text-center">
 								{isConnected ? (
 									<>
 										<Database className="text-muted-foreground mx-auto mb-2 h-12 w-12" />
@@ -247,22 +285,25 @@ const DatabaseTablesTable = ({
 
 					{tables.map((table) => (
 						<TableRow key={`${table.table_schema}.${table.table_name}`}>
-							<TableCell>
-								<div className="flex items-center gap-2">
-									<Database className="text-muted-foreground h-4 w-4" />
-									<span className="font-medium">{table.table_name}</span>
+							<TableCell className="flex items-center gap-2">
+								<Database className="text-muted-foreground size-6 sm:size-4" />
+								<div>
+									<h3 className="font-medium">{table.table_name}</h3>
+									<Badge variant="outline" className="mt-1 sm:hidden">
+										{table.columns.length} columns
+									</Badge>
 								</div>
 							</TableCell>
 
-							<TableCell className="text-muted-foreground">
+							<TableCell className="text-muted-foreground hidden sm:table-cell">
 								<Badge variant="outline">{table.table_schema}</Badge>
 							</TableCell>
 
-							<TableCell className="text-muted-foreground text-sm">
+							<TableCell className="text-muted-foreground hidden text-sm md:table-cell">
 								{table.columns.length} columns
 							</TableCell>
 
-							<TableCell>
+							<TableCell className="hidden sm:table-cell">
 								<Badge
 									variant={getStatusVariant(table.isSelected)}
 									className="capitalize"
@@ -272,24 +313,32 @@ const DatabaseTablesTable = ({
 							</TableCell>
 
 							<TableCell className="text-right">
-								<Button
-									variant="ghost"
-									size="sm"
-									onClick={() => onToggleAccess(table)}
-									className="gap-2"
-								>
-									{table.isSelected ? (
-										<>
-											<XCircle className="h-4 w-4" />
-											Restrict
-										</>
-									) : (
-										<>
-											<CheckCircle2 className="h-4 w-4" />
-											Grant
-										</>
-									)}
-								</Button>
+								<div className="flex items-center justify-end gap-2">
+									<Badge
+										variant={getStatusVariant(table.isSelected)}
+										className="capitalize sm:hidden"
+									>
+										{table.isSelected ? "Accessible" : "Restricted"}
+									</Badge>
+									<Button
+										variant="ghost"
+										size="sm"
+										onClick={() => onToggleAccess(table)}
+										className="gap-2"
+									>
+										{table.isSelected ? (
+											<>
+												<XCircle className="h-4 w-4" />
+												<span className="hidden lg:inline">Restrict</span>
+											</>
+										) : (
+											<>
+												<CheckCircle2 className="h-4 w-4" />
+												<span className="hidden lg:inline">Grant</span>
+											</>
+										)}
+									</Button>
+								</div>
 							</TableCell>
 						</TableRow>
 					))}
