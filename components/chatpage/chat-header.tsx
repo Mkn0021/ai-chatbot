@@ -3,9 +3,7 @@
 import { memo } from "react";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useWindowSize } from "usehooks-ts";
 import { Button } from "@/components/ui/button";
-import { useSidebar } from "@/components/ui/sidebar";
 import { SidebarToggle } from "./sidebar/sidebar-toggle";
 import { VisibilitySelector } from "./visibility-selector";
 import type { VisibilityType } from "@/app/(chat)/schema";
@@ -20,27 +18,22 @@ function PureChatHeader({
 	isReadonly: boolean;
 }) {
 	const router = useRouter();
-	const { open } = useSidebar();
-
-	const { width: windowWidth } = useWindowSize();
 
 	return (
 		<header className="absolute top-0 right-0 left-0 z-10 flex items-center justify-between gap-2 bg-linear-to-b from-white to-transparent px-2 py-6 md:px-2 dark:from-black dark:to-transparent">
-			<div>
+			<div className="flex items-center gap-2">
 				<SidebarToggle className="mr-2" />
-				{(!open || windowWidth < 768) && (
-					<Button
-						className="order-2 ml-auto h-8 px-2 md:order-1 md:ml-0 md:h-fit md:px-2"
-						onClick={() => {
-							router.push("/chat");
-							router.refresh();
-						}}
-						variant="outline"
-					>
-						<Plus />
-						<span className="md:sr-only">New Chat</span>
-					</Button>
-				)}
+				<Button
+					className="order-2 ml-auto h-8 px-2 md:order-1 md:ml-0 md:h-fit md:px-2 md:group-data-[state=expanded]/sidebar-wrapper:hidden"
+					onClick={() => {
+						router.push("/chat");
+						router.refresh();
+					}}
+					variant="outline"
+				>
+					<Plus />
+					<span className="md:sr-only">New Chat</span>
+				</Button>
 			</div>
 
 			{!isReadonly && (
