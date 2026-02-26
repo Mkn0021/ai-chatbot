@@ -167,32 +167,39 @@ const AccessControlTable = ({
 	onManagePermissions,
 }: AccessControlTableProps) => {
 	return (
-		<div className="mt-4 overflow-hidden rounded-lg border">
+		<div className="mt-4 overflow-x-auto rounded-lg border">
 			<Table>
 				<TableHeader>
 					<TableRow>
 						<TableHead>Name</TableHead>
-						<TableHead>Email</TableHead>
-						<TableHead>Role</TableHead>
-						<TableHead>Permissions</TableHead>
-						<TableHead className="w-[100px] text-right">Actions</TableHead>
+						<TableHead className="hidden sm:table-cell">Email</TableHead>
+						<TableHead className="hidden sm:table-cell">Role</TableHead>
+						<TableHead className="hidden sm:table-cell">Permissions</TableHead>
+						<TableHead className="text-center">Actions</TableHead>
 					</TableRow>
 				</TableHeader>
 
 				<TableBody>
 					{members.map((member) => (
 						<TableRow key={member.id}>
-							<TableCell className="font-medium">{member.name}</TableCell>
+							<TableCell className="font-medium">
+								<div>
+									<div>{member.name}</div>
+									<Badge className="mt-1 sm:hidden" variant="outline">
+										{member.role}
+									</Badge>
+								</div>
+							</TableCell>
 
-							<TableCell className="text-muted-foreground">
+							<TableCell className="text-muted-foreground hidden sm:table-cell">
 								{member.email}
 							</TableCell>
 
-							<TableCell>
+							<TableCell className="hidden sm:table-cell">
 								<Badge variant="outline">{member.role}</Badge>
 							</TableCell>
 
-							<TableCell>
+							<TableCell className="hidden sm:table-cell">
 								<span className="text-muted-foreground text-sm">
 									{member.permissions.length} of {availablePermissions.length}{" "}
 									granted
@@ -200,14 +207,19 @@ const AccessControlTable = ({
 							</TableCell>
 
 							<TableCell className="text-right">
-								<Button
-									variant="ghost"
-									size="sm"
-									onClick={() => onManagePermissions(member)}
-									className="gap-2"
-								>
-									<Settings className="h-4 w-4" />
-								</Button>
+								<div className="flex items-center justify-end gap-2">
+									<span className="text-muted-foreground text-xs sm:hidden">
+										{member.permissions.length}/{availablePermissions.length}
+									</span>
+									<Button
+										variant="ghost"
+										size="sm"
+										onClick={() => onManagePermissions(member)}
+										className="gap-2"
+									>
+										<Settings className="h-4 w-4" />
+									</Button>
+								</div>
 							</TableCell>
 						</TableRow>
 					))}

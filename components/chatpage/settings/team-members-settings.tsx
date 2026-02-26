@@ -11,7 +11,13 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { MoreHorizontal, Pencil, Trash, UserPlus } from "lucide-react";
+import {
+	MoreHorizontal,
+	MoreVertical,
+	Pencil,
+	Trash,
+	UserPlus,
+} from "lucide-react";
 import {
 	Dialog,
 	DialogContent,
@@ -134,7 +140,7 @@ export function TeamMembersSettings() {
 					<DialogTrigger asChild>
 						<Button className="gap-2">
 							<UserPlus className="h-4 w-4" />
-							Invite Member
+							<span className="hidden sm:inline">Invite Member</span>
 						</Button>
 					</DialogTrigger>
 				</Dialog>
@@ -213,31 +219,40 @@ const TeamMembersTable = ({
 	};
 
 	return (
-		<div className="mt-4 overflow-hidden rounded-lg border">
+		<div className="mt-4 overflow-x-auto rounded-lg border">
 			<Table>
 				<TableHeader>
 					<TableRow>
 						<TableHead>Name</TableHead>
-						<TableHead>Email</TableHead>
-						<TableHead>Role</TableHead>
-						<TableHead>Status</TableHead>
-						<TableHead>Joined Date</TableHead>
-						<TableHead className="w-[60px] text-right">Actions</TableHead>
+						<TableHead className="hidden sm:table-cell">Email</TableHead>
+						<TableHead className="hidden sm:table-cell">Role</TableHead>
+						<TableHead className="hidden sm:table-cell">Status</TableHead>
+						<TableHead className="hidden lg:table-cell">Joined Date</TableHead>
+						<TableHead className="text-center">Actions</TableHead>
 					</TableRow>
 				</TableHeader>
 
 				<TableBody>
 					{members.map((member) => (
 						<TableRow key={member.id}>
-							<TableCell className="font-medium">{member.name}</TableCell>
+							<TableCell className="font-medium">
+								<div>
+									<div>{member.name}</div>
+									<Badge variant="outline" className="mt-1">
+										{member.role}
+									</Badge>
+								</div>
+							</TableCell>
 
-							<TableCell className="text-muted-foreground">
+							<TableCell className="text-muted-foreground hidden sm:table-cell">
 								{member.email}
 							</TableCell>
 
-							<TableCell>{member.role}</TableCell>
+							<TableCell className="hidden sm:table-cell">
+								{member.role}
+							</TableCell>
 
-							<TableCell>
+							<TableCell className="hidden sm:table-cell">
 								<Badge
 									variant={getStatusVariant(member.status)}
 									className="capitalize"
@@ -246,33 +261,41 @@ const TeamMembersTable = ({
 								</Badge>
 							</TableCell>
 
-							<TableCell className="text-muted-foreground">
+							<TableCell className="text-muted-foreground hidden lg:table-cell">
 								{member.joinedDate}
 							</TableCell>
 
 							<TableCell className="text-right">
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<Button variant="ghost" size="icon">
-											<MoreHorizontal className="h-4 w-4" />
-										</Button>
-									</DropdownMenuTrigger>
+								<div className="flex items-center justify-end gap-2">
+									<Badge
+										variant={getStatusVariant(member.status)}
+										className="capitalize sm:hidden"
+									>
+										{member.status}
+									</Badge>
+									<DropdownMenu>
+										<DropdownMenuTrigger asChild>
+											<Button variant="ghost" size="icon">
+												<MoreVertical className="h-4 w-4" />
+											</Button>
+										</DropdownMenuTrigger>
 
-									<DropdownMenuContent align="end">
-										<DropdownMenuItem onClick={() => onEdit(member)}>
-											<Pencil className="mr-2 h-4 w-4" />
-											Edit
-										</DropdownMenuItem>
+										<DropdownMenuContent align="end">
+											<DropdownMenuItem onClick={() => onEdit(member)}>
+												<Pencil className="mr-2 h-4 w-4" />
+												Edit
+											</DropdownMenuItem>
 
-										<DropdownMenuItem
-											onClick={() => handleDelete(member.id)}
-											className="text-destructive focus:text-destructive"
-										>
-											<Trash className="text-destructive mr-2 h-4 w-4" />
-											Delete
-										</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
+											<DropdownMenuItem
+												onClick={() => handleDelete(member.id)}
+												className="text-destructive focus:text-destructive"
+											>
+												<Trash className="text-destructive mr-2 h-4 w-4" />
+												Delete
+											</DropdownMenuItem>
+										</DropdownMenuContent>
+									</DropdownMenu>
+								</div>
 							</TableCell>
 						</TableRow>
 					))}

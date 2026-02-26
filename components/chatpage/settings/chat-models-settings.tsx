@@ -12,7 +12,14 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Copy, MoreHorizontal, Pencil, Plus, Trash } from "lucide-react";
+import {
+	Copy,
+	MoreHorizontal,
+	MoreVertical,
+	Pencil,
+	Plus,
+	Trash,
+} from "lucide-react";
 import {
 	Dialog,
 	DialogContent,
@@ -90,7 +97,7 @@ export function ChatModelsSettings() {
 					<DialogTrigger asChild>
 						<Button className="gap-2">
 							<Plus className="h-4 w-4" />
-							Add Model
+							<span className="hidden sm:inline">Add Model</span>
 						</Button>
 					</DialogTrigger>
 				</Dialog>
@@ -192,22 +199,39 @@ const ChatModelsTable = ({ models, onEdit, mutate }: ChatModelsTableProps) => {
 			<Table>
 				<TableHeader>
 					<TableRow>
-						<TableHead>Model Name</TableHead>
-						<TableHead>Provider</TableHead>
-						<TableHead>API Key / URL</TableHead>
-						<TableHead>Status</TableHead>
-						<TableHead className="w-[60px] text-right">Actions</TableHead>
+						<TableHead>
+							Model
+							<span className="hidden sm:inline"> Name</span>
+						</TableHead>
+						<TableHead className="hidden sm:table-cell">Provider</TableHead>
+						<TableHead className="hidden md:table-cell">
+							API Key / URL
+						</TableHead>
+						<TableHead className="hidden sm:table-cell">Status</TableHead>
+						<TableHead className="text-center">Actions</TableHead>
 					</TableRow>
 				</TableHeader>
 
 				<TableBody>
 					{models.map((item) => (
 						<TableRow key={item.id}>
-							<TableCell className="font-medium">{item.name}</TableCell>
+							<TableCell className="font-medium">
+								<div>
+									<div>{item.name}</div>
+									<Badge
+										className="mt-1 capitalize sm:hidden"
+										variant="outline"
+									>
+										{item.provider}
+									</Badge>
+								</div>
+							</TableCell>
 
-							<TableCell className="capitalize">{item.provider}</TableCell>
+							<TableCell className="hidden capitalize sm:table-cell">
+								{item.provider}
+							</TableCell>
 
-							<TableCell>
+							<TableCell className="hidden md:table-cell">
 								<div className="flex items-center gap-2">
 									{item.baseUrl ? (
 										<span className="font-mono text-sm">{item.baseUrl}</span>
@@ -229,7 +253,7 @@ const ChatModelsTable = ({ models, onEdit, mutate }: ChatModelsTableProps) => {
 								</div>
 							</TableCell>
 
-							<TableCell>
+							<TableCell className="hidden sm:table-cell">
 								<Badge
 									variant={getStatusVariant(item.status)}
 									className="capitalize"
@@ -239,28 +263,36 @@ const ChatModelsTable = ({ models, onEdit, mutate }: ChatModelsTableProps) => {
 							</TableCell>
 
 							<TableCell className="text-right">
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<Button variant="ghost" size="icon">
-											<MoreHorizontal className="h-4 w-4" />
-										</Button>
-									</DropdownMenuTrigger>
+								<div className="flex items-center justify-end gap-2">
+									<Badge
+										variant={getStatusVariant(item.status)}
+										className="capitalize sm:hidden"
+									>
+										{item.status}
+									</Badge>
+									<DropdownMenu>
+										<DropdownMenuTrigger asChild>
+											<Button variant="ghost" size="icon">
+												<MoreVertical className="h-4 w-4" />
+											</Button>
+										</DropdownMenuTrigger>
 
-									<DropdownMenuContent align="end">
-										<DropdownMenuItem onClick={() => onEdit(item)}>
-											<Pencil className="mr-2 h-4 w-4" />
-											Edit
-										</DropdownMenuItem>
+										<DropdownMenuContent align="end">
+											<DropdownMenuItem onClick={() => onEdit(item)}>
+												<Pencil className="mr-2 h-4 w-4" />
+												Edit
+											</DropdownMenuItem>
 
-										<DropdownMenuItem
-											onClick={() => handleDeleteModel(item.id)}
-											className="text-destructive focus:text-destructive"
-										>
-											<Trash className="text-destructive mr-2 h-4 w-4" />
-											Delete
-										</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
+											<DropdownMenuItem
+												onClick={() => handleDeleteModel(item.id)}
+												className="text-destructive focus:text-destructive"
+											>
+												<Trash className="text-destructive mr-2 h-4 w-4" />
+												Delete
+											</DropdownMenuItem>
+										</DropdownMenuContent>
+									</DropdownMenu>
+								</div>
 							</TableCell>
 						</TableRow>
 					))}
