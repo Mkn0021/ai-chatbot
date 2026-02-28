@@ -1,8 +1,8 @@
 import APIError from "@/lib/api/error";
 import { auth } from "@/app/(auth)/auth";
 import { DBMessage } from "@/lib/db/schemas";
-import { SYSTEM_PROMPT } from "@/lib/ai/prompts";
 import { asyncHandler } from "@/lib/api/response";
+import { getSystemPrompt } from "@/lib/ai/prompts";
 import { getLanguageModel } from "@/lib/ai/models";
 import { getStreamContext } from "@/lib/ai/context";
 import { errorHandler } from "@/middlewares/error-handler";
@@ -30,7 +30,7 @@ import {
 } from "@/app/(chat)/actions";
 import { ChatMessage } from "@/types";
 import { convertToUIMessages, generateUUID } from "@/lib/utils";
-import { getOrganizationModelInfo } from "@/app/(organization)/actions";
+import { getOrganizationById } from "@/app/(organization)/actions";
 
 // POST - api/chat
 export async function POST(req: Request) {
@@ -48,16 +48,16 @@ export async function POST(req: Request) {
 			differenceInHours: 24,
 		});
 
-		const response = await getOrganizationModelInfo({
+		const organization = await getOrganizationById({
 			organizationId: session.user.organizationId!,
 		});
 
-		if (messageCount > response.dailyMessageLimit) {
+		if (messageCount > organization.dailyMessageLimit) {
 			throw APIError.forbidden("You hit the rate limit, try again after 24hr");
 		}
 
 		if (
-			!response.models.some((model) => model.id === input.selectedChatModel)
+			!organization.models.some((model) => model.id === input.selectedChatModel)
 		) {
 			throw APIError.notFound(
 				`Model "${input.selectedChatModel}" is not available for your organization`,
@@ -128,7 +128,10 @@ export async function POST(req: Request) {
 				try {
 					const result = streamText({
 						model: getLanguageModel(input.selectedChatModel, input.apiKey),
-						system: SYSTEM_PROMPT,
+						system: getSystemPrompt({
+							modelId: input.selectedChatModel,
+							databaseContext: organization.databaseContext,
+						}),
 						messages: modelMessages,
 						stopWhen: stepCountIs(5),
 						experimental_activeTools: ["sqlQuery"],
