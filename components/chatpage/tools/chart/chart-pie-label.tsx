@@ -17,6 +17,7 @@ import {
 	ChartTooltipContent,
 } from "@/components/ui/chart";
 import type { ChartProps } from "@/types";
+import { formatChartValue } from "@/lib/utils";
 
 type ChartPieLabelProps = ChartProps & {
 	nameKey?: string;
@@ -57,7 +58,12 @@ export function ChartPieLabel({
 				>
 					<PieChart>
 						<ChartTooltip content={<ChartTooltipContent hideLabel />} />
-						<Pie data={coloredData} dataKey={dataKey} label nameKey={nameKey} />
+						<Pie
+							data={coloredData}
+							dataKey={dataKey}
+							label={({ value }) => formatChartValue(value)}
+							nameKey={nameKey}
+						/>
 					</PieChart>
 				</ChartContainer>
 			</CardContent>

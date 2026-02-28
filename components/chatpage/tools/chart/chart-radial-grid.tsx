@@ -1,7 +1,7 @@
 "use client";
 
 import { TrendingUp, TrendingDown } from "lucide-react";
-import { PolarGrid, RadialBar, RadialBarChart } from "recharts";
+import { PolarGrid, RadialBar, RadialBarChart, LabelList } from "recharts";
 
 import {
 	Card,
@@ -17,6 +17,7 @@ import {
 	ChartTooltipContent,
 } from "@/components/ui/chart";
 import type { ChartProps } from "@/types";
+import { formatChartValue } from "@/lib/utils";
 
 type ChartRadialGridProps = ChartProps & {
 	nameKey?: string;
@@ -61,7 +62,15 @@ export function ChartRadialGrid({
 							content={<ChartTooltipContent hideLabel nameKey={nameKey} />}
 						/>
 						<PolarGrid gridType="circle" />
-						<RadialBar dataKey={dataKey} />
+						<RadialBar dataKey={dataKey}>
+							<LabelList
+								dataKey={dataKey}
+								position="insideStart"
+								className="fill-foreground"
+								fontSize={12}
+								formatter={(value: unknown) => formatChartValue(value)}
+							/>
+						</RadialBar>
 					</RadialBarChart>
 				</ChartContainer>
 			</CardContent>

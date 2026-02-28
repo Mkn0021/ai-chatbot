@@ -92,3 +92,42 @@ export const removeLocalStorageItem = (key: string): void => {
 	if (typeof window === "undefined") return;
 	localStorage.removeItem(key);
 };
+
+export const formatChartValue = (value: unknown) => {
+	if (value === null || value === undefined) return "-";
+
+	if (typeof value === "number" && !isNaN(value)) {
+		if (Math.abs(value) >= 1000) {
+			return new Intl.NumberFormat("en-US", {
+				notation: "compact",
+				maximumFractionDigits: 1,
+			}).format(value);
+		}
+		return value.toLocaleString("en-US");
+	}
+
+	if (typeof value === "string") {
+		const parts = value.split(".");
+		const numbers: number[] = [];
+
+		for (let part of parts) {
+			const n = Number(part);
+			if (!isNaN(n)) numbers.push(n);
+		}
+
+		if (numbers.length === 0) return value;
+
+		const sum = numbers.reduce((acc, n) => acc + n, 0);
+
+		if (Math.abs(sum) >= 1000) {
+			return new Intl.NumberFormat("en-US", {
+				notation: "compact",
+				maximumFractionDigits: 1,
+			}).format(sum);
+		}
+
+		return sum.toLocaleString("en-US");
+	}
+
+	return String(value);
+};

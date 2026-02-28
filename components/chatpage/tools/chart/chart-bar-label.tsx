@@ -24,6 +24,7 @@ import {
 	ChartTooltipContent,
 } from "@/components/ui/chart";
 import type { ChartProps } from "@/types";
+import { formatChartValue } from "@/lib/utils";
 
 type ChartBarLabelProps = ChartProps & {
 	xAxisKey: string;
@@ -95,6 +96,7 @@ export function ChartBarLabel({
 								offset={8}
 								className="fill-foreground"
 								fontSize={12}
+								formatter={(value: unknown) => formatChartValue(value)}
 							/>
 						</Bar>
 					</BarChart>

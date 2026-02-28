@@ -16,6 +16,7 @@ import {
 	ChartTooltipContent,
 } from "@/components/ui/chart";
 import type { ChartProps } from "@/types";
+import { formatChartValue } from "@/lib/utils";
 
 type ChartBarInteractiveProps = ChartProps & {
 	xAxisKey: string;
@@ -32,13 +33,30 @@ export function ChartBarInteractive({
 }: ChartBarInteractiveProps) {
 	const [activeChart, setActiveChart] = React.useState<string>(dataKeys[0]);
 
-	const total = React.useMemo(() => {
-		const totals: Record<string, number> = {};
+	const aggregatedValues = React.useMemo(() => {
+		const results: Record<string, number> = {};
+
+		// Determine aggregation type from title
+		const isAverage =
+			title.toLowerCase().includes("average") ||
+			title.toLowerCase().includes("avg");
+
 		dataKeys.forEach((key) => {
-			totals[key] = chartData.reduce((acc, curr) => acc + (curr[key] || 0), 0);
+			const nums = chartData
+				.map((row) => Number(row[key]))
+				.filter((n) => !isNaN(n));
+
+			if (nums.length === 0) {
+				results[key] = 0;
+			} else {
+				results[key] = isAverage
+					? nums.reduce((acc, n) => acc + n, 0) / nums.length
+					: nums.reduce((acc, n) => acc + n, 0);
+			}
 		});
-		return totals;
-	}, [chartData, dataKeys]);
+
+		return results;
+	}, [chartData, dataKeys, title]);
 
 	return (
 		<Card className="w-full max-w-6xl">
@@ -48,8 +66,7 @@ export function ChartBarInteractive({
 					<CardDescription>{description}</CardDescription>
 				</div>
 				<div className="flex">
-					{dataKeys.map((key) => {
-						const chart = key;
+					{dataKeys.map((chart) => {
 						return (
 							<button
 								key={chart}
@@ -61,7 +78,7 @@ export function ChartBarInteractive({
 									{chartConfig[chart]?.label || chart}
 								</span>
 								<span className="text-lg leading-none font-bold sm:text-3xl">
-									{(total[key] || 0).toLocaleString()}
+									{formatChartValue(aggregatedValues[chart])}
 								</span>
 							</button>
 						);
