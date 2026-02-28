@@ -463,6 +463,7 @@ function PureModelSelectorCompact({
 	onModelChange?: (modelId: string) => void;
 }) {
 	const [open, setOpen] = useState(false);
+	const [mounted, setMounted] = useState(false);
 
 	const [cachedModels, setCachedModels] = useLocalStorage<ChatModel[]>(
 		"chat-models",
@@ -470,6 +471,10 @@ function PureModelSelectorCompact({
 	);
 
 	const { organization, isLoading, error } = useOrganization();
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
 
 	useEffect(() => {
 		if (organization?.models && organization.models.length > 0) {
@@ -490,7 +495,7 @@ function PureModelSelectorCompact({
 		return grouped;
 	}, [models]);
 
-	if (isLoading) {
+	if (!mounted || isLoading) {
 		return (
 			<Button className="h-8 w-[200px]" variant="ghost" disabled>
 				Loading models…
