@@ -15,10 +15,10 @@ type SuggestedActionsProps = {
 
 function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
 	const suggestedActions = [
-		"Find duplicate records in customer data",
-		"What are the most recent transactions?",
-		"Show sales trends from the past month",
-		"Which products are low in inventory?",
+		"Show appointment trends for the last 12 months",
+		"What is the average success rate for each department?",
+		"Show Department-wise average treatment cost",
+		"Compare revenue vs cost by department",
 	];
 
 	return (
