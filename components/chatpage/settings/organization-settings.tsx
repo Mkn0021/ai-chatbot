@@ -1,32 +1,18 @@
 "use client";
 
-import useSWR from "swr";
-import { useState } from "react";
 import { toast } from "sonner";
+import { useState } from "react";
+import { Save } from "lucide-react";
+import { fetcher } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Save } from "lucide-react";
-import { fetcher } from "@/lib/utils";
-import { DEFAULT_MODELS } from "@/lib/ai/models";
 import { Spinner } from "@/components/ui/spinner";
-import { Organization } from "@/app/(organization)/schema";
+import { useOrganization } from "@/components/chatpage/organization-provider";
 
 export function OrganizationSettings() {
 	const [isUpdating, setIsUpdating] = useState(false);
-
-	const {
-		data: organization,
-		isLoading,
-		mutate,
-	} = useSWR<Organization>("/api/organization", fetcher);
+	const { organization, isLoading, mutate } = useOrganization();
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -41,7 +27,7 @@ export function OrganizationSettings() {
 		setIsUpdating(true);
 
 		try {
-			const response = await fetch("/api/organization", {
+			await fetcher("/api/organization", {
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
@@ -49,13 +35,7 @@ export function OrganizationSettings() {
 				body: JSON.stringify(data),
 			});
 
-			if (!response.ok) {
-				const error = await response.json();
-				throw new Error(error.cause || "Failed to update organization");
-			}
-
-			const result = await response.json();
-			mutate(result.data);
+			mutate();
 			toast.success("Organization updated successfully");
 		} catch (error) {
 			toast.error(

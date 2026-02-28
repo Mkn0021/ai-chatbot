@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import {
 	pgTable,
 	text,
@@ -10,7 +11,7 @@ import {
 export const organization = pgTable("organizations", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
-	dailyMessageLimit: integer("daily_message_limit").default(1000),
+	dailyMessageLimit: integer("daily_message_limit").default(1000).notNull(),
 	createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -40,9 +41,41 @@ export const databaseConnection = pgTable("database_connections", {
 		}),
 	connectionString: text("connection_string").notNull(),
 	name: text("name"),
-	tablesData: jsonb("tables_data"), // Stores array of {table_schema, table_name, columns}
-	selectedTables: jsonb("selected_tables").$type<string[]>().default([]), // Array like ['public.users', 'public.products']
+	tablesData: jsonb("tables_data"),
+	selectedTables: jsonb("selected_tables").$type<string[]>().default([]),
+	databaseContext: text("database_context"),
 	isActive: boolean("is_active").default(true),
 	createdAt: timestamp("created_at").defaultNow(),
 	updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+export const organizationRelations = relations(
+	organization,
+	({ one, many }) => ({
+		databaseConnection: one(databaseConnection, {
+			fields: [organization.id],
+			references: [databaseConnection.organizationId],
+		}),
+		models: many(organizationModel),
+	}),
+);
+
+export const databaseConnectionRelations = relations(
+	databaseConnection,
+	({ one }) => ({
+		organization: one(organization, {
+			fields: [databaseConnection.organizationId],
+			references: [organization.id],
+		}),
+	}),
+);
+
+export const organizationModelRelations = relations(
+	organizationModel,
+	({ one }) => ({
+		organization: one(organization, {
+			fields: [organizationModel.organizationId],
+			references: [organization.id],
+		}),
+	}),
+);

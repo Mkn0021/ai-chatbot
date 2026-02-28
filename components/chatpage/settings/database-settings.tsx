@@ -23,42 +23,25 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-
-interface DatabaseColumn {
-	column_name: string;
-	data_type: string;
-}
-
-interface DatabaseTable {
-	table_schema: string;
-	table_name: string;
-	columns: DatabaseColumn[];
-	isSelected?: boolean;
-}
-
-interface ConnectionData {
-	connection: {
-		id: string;
-		name: string | null;
-		isActive: boolean | null;
-	};
-	tables: DatabaseTable[];
-}
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+import type {
+	DatabaseTable,
+	GetDatabaseConnectionResult,
+} from "@/app/(organization)/schema";
+import { fetcher } from "@/lib/utils";
 
 export function DatabaseSettings() {
 	const [connectionString, setConnectionString] = useState("");
 	const [isConnecting, setIsConnecting] = useState(false);
 	const [localTables, setLocalTables] = useState<DatabaseTable[]>([]);
 
-	const { data: connectionData, mutate } = useSWR<{
-		success: boolean;
-		data: ConnectionData | null;
-	}>("/api/organization/database/connect", fetcher);
+	const { data: connectionData, mutate } =
+		useSWR<GetDatabaseConnectionResult | null>(
+			"/api/organization/database",
+			fetcher,
+		);
 
-	const isConnected = connectionData?.data !== null;
-	const savedTables = connectionData?.data?.tables || [];
+	const isConnected = connectionData !== null;
+	const savedTables = connectionData?.tables || [];
 	const displayTables = localTables.length > 0 ? localTables : savedTables;
 
 	const handleConnect = async () => {
@@ -70,23 +53,18 @@ export function DatabaseSettings() {
 		setIsConnecting(true);
 
 		try {
-			const response = await fetch("/api/organization/database/connect", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
+			const result = await fetcher<GetDatabaseConnectionResult>(
+				"/api/organization/database",
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({ connectionString }),
 				},
-				body: JSON.stringify({ connectionString }),
-			});
+			);
 
-			const result = await response.json();
-
-			if (!response.ok) {
-				toast.error(result.error || "Failed to connect to database");
-				setIsConnecting(false);
-				return;
-			}
-
-			mutate();
+			mutate(result);
 			setConnectionString("");
 			setLocalTables([]);
 			toast.success("Connected and saved successfully");
@@ -101,18 +79,11 @@ export function DatabaseSettings() {
 		setIsConnecting(true);
 
 		try {
-			const response = await fetch("/api/organization/database/connect", {
+			await fetcher("/api/organization/database", {
 				method: "DELETE",
 			});
 
-			const result = await response.json();
-
-			if (!response.ok) {
-				toast.error(result.error || "Failed to disconnect database");
-				return;
-			}
-
-			mutate();
+			mutate(null);
 			setLocalTables([]);
 			toast.success("Database disconnected successfully");
 		} catch (error: any) {
@@ -137,21 +108,18 @@ export function DatabaseSettings() {
 			.map((t) => `${t.table_schema}.${t.table_name}`);
 
 		try {
-			const response = await fetch("/api/organization/database/connect", {
-				method: "PUT",
-				headers: {
-					"Content-Type": "application/json",
+			const result = await fetcher<GetDatabaseConnectionResult>(
+				"/api/organization/database",
+				{
+					method: "PUT",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({ selectedTables }),
 				},
-				body: JSON.stringify({ selectedTables }),
-			});
+			);
 
-			if (!response.ok) {
-				const result = await response.json();
-				toast.error(result.error || "Failed to save selection");
-				return;
-			}
-
-			mutate();
+			mutate(result);
 			setLocalTables([]);
 			toast.success("Table selection saved");
 		} catch (error: any) {
@@ -176,7 +144,6 @@ export function DatabaseSettings() {
 					<div className="flex gap-2">
 						<Input
 							id="connection-string"
-							type="password"
 							placeholder="postgresql://user:password@host:port/database"
 							value={connectionString}
 							onChange={(e) => setConnectionString(e.target.value)}
@@ -252,10 +219,24 @@ const DatabaseTablesTable = ({
 				<TableHeader>
 					<TableRow>
 						<TableHead>Table Name</TableHead>
-						<TableHead className="hidden sm:table-cell">Schema</TableHead>
-						<TableHead className="hidden md:table-cell">Columns</TableHead>
-						<TableHead className="hidden sm:table-cell">Status</TableHead>
-						<TableHead className="text-center">Actions</TableHead>
+						<TableHead
+							className={isConnected ? "hidden sm:table-cell" : "hidden"}
+						>
+							Schema
+						</TableHead>
+						<TableHead
+							className={isConnected ? "hidden md:table-cell" : "hidden"}
+						>
+							Columns
+						</TableHead>
+						<TableHead
+							className={isConnected ? "hidden sm:table-cell" : "hidden"}
+						>
+							Status
+						</TableHead>
+						<TableHead className={isConnected ? "text-center" : "hidden"}>
+							Actions
+						</TableHead>
 					</TableRow>
 				</TableHeader>
 

@@ -1,6 +1,5 @@
 "use client";
 
-import useSWR from "swr";
 import type { UseChatHelpers } from "@ai-sdk/react";
 import type { UIMessage } from "ai";
 import equal from "fast-deep-equal";
@@ -30,7 +29,7 @@ import {
 	ModelSelectorTrigger,
 } from "@/components/ai-element/model-selector";
 import type { Attachment, ChatMessage } from "@/types";
-import { cn, fetcher } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import {
 	PromptInput,
 	PromptInputSubmit,
@@ -45,6 +44,7 @@ import { PreviewAttachment } from "./message/preview-attachment";
 import { Paperclip, Square as Stop } from "lucide-react";
 import type { ChatModel } from "@/lib/ai/models";
 import { DropdownMenuSeparator } from "../ui/dropdown-menu";
+import { useOrganization } from "./organization-provider";
 
 function setCookie(name: string, value: string) {
 	const maxAge = 60 * 60 * 24 * 365; // 1 year
@@ -464,11 +464,20 @@ function PureModelSelectorCompact({
 }) {
 	const [open, setOpen] = useState(false);
 
-	const {
-		data: models = [],
-		isLoading,
-		error,
-	} = useSWR<ChatModel[]>("/api/model", fetcher);
+	const [cachedModels, setCachedModels] = useLocalStorage<ChatModel[]>(
+		"chat-models",
+		[],
+	);
+
+	const { organization, isLoading, error } = useOrganization();
+
+	useEffect(() => {
+		if (organization?.models && organization.models.length > 0) {
+			setCachedModels(organization.models as ChatModel[]);
+		}
+	}, [organization, setCachedModels]);
+
+	const models = (organization?.models || cachedModels) as ChatModel[];
 
 	const modelsByProvider = useMemo(() => {
 		const grouped: Record<string, ChatModel[]> = {};
