@@ -3,7 +3,7 @@ import "server-only";
 import db from "@/lib/db";
 import { User } from "better-auth";
 import APIError from "@/lib/api/error";
-import { generateUUID, generateModelId } from "@/lib/utils";
+import { generateUUID } from "@/lib/utils";
 import { eq } from "drizzle-orm/sql/expressions/conditions";
 import {
 	organization,
@@ -89,24 +89,25 @@ export async function createOrganizationModel(
 	organizationId: string,
 	data: CreateOrganizationModelInput,
 ) {
-	const modelId = generateModelId(data.provider, data.name);
+	if (!data.id) {
+		throw APIError.badRequest("Model ID is required");
+	}
 
 	const existingModel = await db.query.organizationModel.findFirst({
-		where: eq(organizationModel.id, modelId),
+		where: eq(organizationModel.id, data.id),
 	});
 
 	if (existingModel) {
 		throw APIError.badRequest(
-			`A model with the name "${data.name}" already exists for this provider`,
+			`A model with the ID "${data.id}" already exists`,
 		);
 	}
 
 	const [model] = await db
 		.insert(organizationModel)
 		.values({
-			id: modelId,
-			organizationId,
 			...data,
+			organizationId,
 		})
 		.returning();
 

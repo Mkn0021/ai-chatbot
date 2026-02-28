@@ -22,7 +22,7 @@ async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
 	const chat = await getChatById({ id });
 
 	if (!chat) {
-		redirect("/");
+		redirect("/chat");
 	}
 
 	const session = await auth.api.getSession({
@@ -47,7 +47,9 @@ async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
 
 	// Get model from cookie or default
 	const modelCookie = cookieStore.get("chat-model");
-	const initialModel = modelCookie?.value ?? DEFAULT_MODELS[0].id;
+	const initialModel = modelCookie?.value
+		? decodeURIComponent(modelCookie.value)
+		: DEFAULT_MODELS[0].id;
 
 	return (
 		<>

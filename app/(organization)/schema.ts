@@ -29,7 +29,6 @@ export type OrganizationFormData = Pick<Organization, "name"> & {
 
 const OrgModelSelectSchema = createSelectSchema(organizationModel);
 const OrgModelInsertSchema = createInsertSchema(organizationModel).omit({
-	id: true,
 	organizationId: true,
 	createdAt: true,
 	updatedAt: true,

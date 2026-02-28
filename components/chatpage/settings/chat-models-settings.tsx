@@ -12,14 +12,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import {
-	Copy,
-	MoreHorizontal,
-	MoreVertical,
-	Pencil,
-	Plus,
-	Trash,
-} from "lucide-react";
+import { Copy, MoreVertical, Pencil, Plus, Trash } from "lucide-react";
 import {
 	Dialog,
 	DialogContent,
@@ -329,6 +322,7 @@ function ModelDialog({
 	mutate,
 }: ModelDialogProps) {
 	const [form, setForm] = useState({
+		id: "",
 		name: "",
 		provider: "",
 		description: "",
@@ -339,6 +333,7 @@ function ModelDialog({
 	useEffect(() => {
 		if (mode === "edit" && selectedModel) {
 			setForm({
+				id: selectedModel.id,
 				name: selectedModel.name,
 				provider: selectedModel.provider,
 				description: selectedModel.description,
@@ -348,6 +343,7 @@ function ModelDialog({
 		}
 		if (mode === "add") {
 			setForm({
+				id: "",
 				name: "",
 				provider: "",
 				description: "",
@@ -364,6 +360,7 @@ function ModelDialog({
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
+						id: form.id,
 						name: form.name,
 						provider: form.provider,
 						description: form.description,
@@ -478,6 +475,7 @@ function ModelDialog({
 									if (selectedModel) {
 										setForm({
 											...form,
+											id: selectedModel.id,
 											name: selectedModel.name,
 											provider: selectedModel.provider,
 											description: selectedModel.description,
@@ -504,12 +502,20 @@ function ModelDialog({
 							{(DEFAULT_MODELS.find(
 								(m) => m.name === form.name && m.provider === form.provider,
 							)?.id || (form.name ? "custom" : "")) === "custom" && (
-								<Input
-									placeholder="Enter custom model name"
-									value={form.name === "custom" ? "" : form.name}
-									onChange={(e) => setForm({ ...form, name: e.target.value })}
-									className="mt-2"
-								/>
+								<>
+									<Input
+										placeholder="Enter custom model name"
+										value={form.name === "custom" ? "" : form.name}
+										onChange={(e) => setForm({ ...form, name: e.target.value })}
+										className="mt-2"
+									/>
+									<Input
+										placeholder="Enter model ID (e.g., gpt-4)"
+										value={form.id}
+										onChange={(e) => setForm({ ...form, id: e.target.value })}
+										className="mt-2"
+									/>
+								</>
 							)}
 						</div>
 					</div>

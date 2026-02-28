@@ -46,6 +46,12 @@ export const DEFAULT_MODELS: ChatModel[] = [
 		provider: "google",
 		description: "Multimodal model for text and image understanding.",
 	},
+	{
+		id: "ollama/qwen2.5:0.5b",
+		name: "Qwen 2.5 0.5B",
+		provider: "ollama",
+		description: "Lightweight model for efficient performance.",
+	},
 ];
 
 export function getLanguageModel(
