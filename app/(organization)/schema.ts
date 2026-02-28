@@ -101,3 +101,18 @@ export interface GetDatabaseConnectionResult {
 	};
 	tables: DatabaseTable[];
 }
+
+export interface GetOrganizationByIdResult {
+	id: string;
+	name: string;
+	dailyMessageLimit: number;
+	databaseContext: string | null;
+	models: {
+		id: string;
+		name: string;
+		provider: string;
+		description: string | null;
+		baseUrl: string | null;
+		status: string | null;
+	}[];
+}

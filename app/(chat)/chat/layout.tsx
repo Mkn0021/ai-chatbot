@@ -5,6 +5,7 @@ import { auth } from "@/app/(auth)/auth";
 import { AppSidebar } from "@/components/chatpage/sidebar/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { DataStreamProvider } from "@/components/chatpage/data-stream-provider";
+import { OrganizationProvider } from "@/components/chatpage/organization-provider";
 
 const DEFAULT_AVATER = "/images/default-avatar.png";
 
@@ -16,9 +17,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 				strategy="beforeInteractive"
 			/>
 			<DataStreamProvider>
-				<Suspense fallback={<div className="flex h-dvh" />}>
-					<SidebarWrapper>{children}</SidebarWrapper>
-				</Suspense>
+				<OrganizationProvider>
+					<Suspense fallback={<div className="flex h-dvh" />}>
+						<SidebarWrapper>{children}</SidebarWrapper>
+					</Suspense>
+				</OrganizationProvider>
 			</DataStreamProvider>
 		</>
 	);

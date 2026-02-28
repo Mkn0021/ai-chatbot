@@ -14,7 +14,7 @@ export const GET = asyncHandler(async (_, context, __) => {
 		throw APIError.notFound("User does not belong to an organization");
 	}
 
-	const organization = await getOrganizationById(organizationId);
+	const organization = await getOrganizationById({ organizationId });
 
 	return {
 		data: organization,

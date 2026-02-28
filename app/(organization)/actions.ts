@@ -20,8 +20,10 @@ import {
 	UpdateTableSelectionInput,
 	DatabaseTablesResult,
 	GetDatabaseConnectionResult,
+	GetOrganizationByIdResult,
 } from "./schema";
 import { Pool } from "pg";
+import { getDatabaseContext } from "@/lib/ai/prompts";
 
 export async function createUserOrganization({ user }: { user: User }) {
 	try {
@@ -54,14 +56,43 @@ export async function createUserOrganization({ user }: { user: User }) {
 	}
 }
 
-export async function getOrganizationById(organizationId: string) {
+export async function getOrganizationById({
+	organizationId,
+}: {
+	organizationId: string;
+}): Promise<GetOrganizationByIdResult> {
 	const org = await db.query.organization.findFirst({
 		where: eq(organization.id, organizationId),
+		with: {
+			databaseConnection: {
+				columns: {
+					databaseContext: true,
+				},
+			},
+			models: {
+				columns: {
+					id: true,
+					name: true,
+					provider: true,
+					description: true,
+					baseUrl: true,
+					status: true,
+				},
+			},
+		},
 	});
 
-	if (!org) throw APIError.notFound("Organization not found");
+	if (!org) {
+		throw APIError.notFound("Organization not found");
+	}
 
-	return org;
+	return {
+		id: org.id,
+		name: org.name,
+		dailyMessageLimit: org.dailyMessageLimit,
+		databaseContext: org.databaseConnection?.databaseContext ?? null,
+		models: org.models,
+	};
 }
 
 export async function updateOrganization(
@@ -166,33 +197,6 @@ export async function deleteOrganizationModel(
 	if (!deletedModel) throw APIError.internal("Failed to delete model");
 
 	return deletedModel;
-}
-
-export async function getOrganizationModelInfo({
-	organizationId,
-}: {
-	organizationId?: string;
-}) {
-	if (!organizationId) {
-		throw APIError.notFound("User does not belong to an organization");
-	}
-
-	const models = await db.query.organizationModel.findMany({
-		where: eq(organizationModel.organizationId, organizationId),
-	});
-
-	const org = await db.query.organization.findFirst({
-		where: eq(organization.id, organizationId),
-	});
-
-	if (!org) {
-		throw APIError.notFound("Organization not found");
-	}
-
-	return {
-		models,
-		dailyMessageLimit: org.dailyMessageLimit || 100,
-	};
 }
 
 export async function getDatabaseTables(
@@ -300,37 +304,88 @@ export async function getDatabaseConnection(
 export async function updateTableSelection(
 	organizationId: string,
 	data: UpdateTableSelectionInput,
-) {
-	const connection = await db.query.databaseConnection.findFirst({
-		where: eq(databaseConnection.organizationId, organizationId),
+): Promise<GetDatabaseConnectionResult> {
+	return await db.transaction(async (tx) => {
+		const connection = await tx.query.databaseConnection.findFirst({
+			where: eq(databaseConnection.organizationId, organizationId),
+		});
+
+		if (!connection) {
+			throw APIError.notFound("No database connection found");
+		}
+
+		if (!connection.tablesData) {
+			throw APIError.badRequest("No tables metadata found");
+		}
+
+		const filteredTables = (connection.tablesData as DatabaseTable[]).filter(
+			(table) =>
+				data.selectedTables.includes(
+					`${table.table_schema}.${table.table_name}`,
+				),
+		);
+
+		const newDatabaseContext = getDatabaseContext(filteredTables);
+
+		const [updated] = await tx
+			.update(databaseConnection)
+			.set({
+				selectedTables: data.selectedTables as string[],
+				databaseContext: newDatabaseContext,
+				updatedAt: new Date(),
+			})
+			.where(eq(databaseConnection.id, connection.id))
+			.returning();
+
+		if (!updated) {
+			throw APIError.internal("Failed to update table selection");
+		}
+
+		const tablesData = (updated.tablesData as DatabaseTable[]) || [];
+		const selectedTables = (updated.selectedTables as string[]) || [];
+
+		const tables = tablesData.map((t) => ({
+			...t,
+			isSelected: selectedTables.includes(`${t.table_schema}.${t.table_name}`),
+		}));
+
+		return {
+			connection: {
+				id: updated.id,
+				name: updated.name,
+				isActive: updated.isActive,
+			},
+			tables,
+		};
 	});
-
-	if (!connection) {
-		throw APIError.notFound("No database connection found");
-	}
-
-	const [updated] = await db
-		.update(databaseConnection)
-		.set({
-			selectedTables: data.selectedTables as any,
-			updatedAt: new Date(),
-		})
-		.where(eq(databaseConnection.id, connection.id))
-		.returning();
-
-	return updated;
 }
 
 export async function deleteDatabaseConnection(organizationId: string) {
-	const connection = await db.query.databaseConnection.findFirst({
-		where: eq(databaseConnection.organizationId, organizationId),
+	return await db.transaction(async (tx) => {
+		const connection = await tx.query.databaseConnection.findFirst({
+			where: eq(databaseConnection.organizationId, organizationId),
+		});
+
+		if (!connection) {
+			throw APIError.notFound("No database connection found");
+		}
+
+		await tx
+			.update(databaseConnection)
+			.set({
+				tablesData: [],
+				selectedTables: [],
+				databaseContext: null,
+				isActive: false,
+				updatedAt: new Date(),
+			})
+			.where(eq(databaseConnection.id, connection.id));
+
+		const [deleted] = await tx
+			.delete(databaseConnection)
+			.where(eq(databaseConnection.id, connection.id))
+			.returning();
+
+		return deleted;
 	});
-
-	if (!connection) {
-		throw APIError.notFound("No database connection found");
-	}
-
-	await db
-		.delete(databaseConnection)
-		.where(eq(databaseConnection.id, connection.id));
 }
