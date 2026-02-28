@@ -24,7 +24,7 @@ import {
 	fetcher,
 	fetchWithErrorHandlers,
 	generateUUID,
-	getApiKey,
+	getLocalStorageItem,
 } from "@/lib/utils";
 
 export function Chat({
@@ -112,7 +112,9 @@ export function Chat({
 						}),
 					);
 
-				const apiKey = getApiKey(currentModelIdRef.current);
+				const apiKey = getLocalStorageItem(
+					`${currentModelIdRef.current}_api_key`,
+				);
 				const [provider] = currentModelIdRef.current.split("/");
 
 				if (provider !== "ollama" && !apiKey) {

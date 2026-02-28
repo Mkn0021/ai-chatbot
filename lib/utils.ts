@@ -78,17 +78,17 @@ export function sanitizeText(text: string) {
 	return text.replace("<has_function_call>", "");
 }
 
-export const getApiKey = (modelId: string): string => {
+export const getLocalStorageItem = (key: string): string => {
 	if (typeof window === "undefined") return "";
-	return localStorage.getItem(`model_api_key_${modelId}`) || "";
+	return localStorage.getItem(key) || "";
 };
 
-export const setApiKey = (modelId: string, apiKey: string): void => {
+export const setLocalStorageItem = (key: string, value: string): void => {
 	if (typeof window === "undefined") return;
-	localStorage.setItem(`model_api_key_${modelId}`, apiKey);
+	localStorage.setItem(key, value);
 };
 
-export const removeApiKey = (modelId: string): void => {
+export const removeLocalStorageItem = (key: string): void => {
 	if (typeof window === "undefined") return;
-	localStorage.removeItem(`model_api_key_${modelId}`);
+	localStorage.removeItem(key);
 };

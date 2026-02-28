@@ -40,7 +40,12 @@ import { Badge } from "@/components/ui/badge";
 
 import { DEFAULT_MODELS } from "@/lib/ai/models";
 import { PasswordInput } from "@/components/ui/password-input";
-import { fetcher, getApiKey, removeApiKey, setApiKey } from "@/lib/utils";
+import {
+	fetcher,
+	getLocalStorageItem,
+	removeLocalStorageItem,
+	setLocalStorageItem,
+} from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 
 type ModelStatus = "active" | "inactive" | "error";
@@ -138,28 +143,19 @@ interface ChatModelsTableProps {
 const ChatModelsTable = ({ models, onEdit, mutate }: ChatModelsTableProps) => {
 	const handleDeleteModel = async (modelId: string) => {
 		try {
-			const response = await fetch(`/api/organization/model?id=${modelId}`, {
+			await fetcher(`/api/organization/model?id=${modelId}`, {
 				method: "DELETE",
 			});
-
-			const result = await response.json();
-
-			if (response.ok) {
-				removeApiKey(modelId);
-
-				await mutate();
-				toast.success("Model deleted successfully");
-			} else {
-				toast.error(result.message || "Failed to delete model");
-			}
-		} catch (error) {
-			console.error("Error deleting model:", error);
-			toast.error("Failed to delete model");
+			removeLocalStorageItem(`${modelId}_api_key`);
+			await mutate();
+			toast.success("Model deleted successfully");
+		} catch (error: any) {
+			toast.error(error.message || "Failed to delete model");
 		}
 	};
 
 	const copyToClipboard = async (modelId: string) => {
-		const apiKey = getApiKey(modelId);
+		const apiKey = getLocalStorageItem(`${modelId}_api_key`);
 		if (!apiKey) {
 			toast.error("No API key found");
 			return;
@@ -169,7 +165,7 @@ const ChatModelsTable = ({ models, onEdit, mutate }: ChatModelsTableProps) => {
 	};
 
 	const maskKey = (modelId: string) => {
-		const key = getApiKey(modelId);
+		const key = getLocalStorageItem(`${modelId}_api_key`);
 		if (!key) return "Not set";
 		return `${key.slice(0, 3)}••••••`;
 	};
@@ -337,7 +333,7 @@ function ModelDialog({
 				name: selectedModel.name,
 				provider: selectedModel.provider,
 				description: selectedModel.description,
-				apiKey: getApiKey(selectedModel.id),
+				apiKey: getLocalStorageItem(`${selectedModel.id}_api_key`),
 				baseUrl: selectedModel.baseUrl || "",
 			});
 		}
@@ -356,7 +352,7 @@ function ModelDialog({
 	const handleSubmit = async () => {
 		if (mode === "add") {
 			try {
-				const response = await fetch("/api/organization/model", {
+				const result = await fetcher<ModelItem>("/api/organization/model", {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
@@ -368,27 +364,18 @@ function ModelDialog({
 						status: "active",
 					}),
 				});
-
-				const result = await response.json();
-
-				if (response.ok) {
-					if (form.apiKey) {
-						setApiKey(result.data.id, form.apiKey);
-					}
-
-					mutate();
-					onOpenChange(false);
-					toast.success("Model added successfully");
-				} else {
-					toast.error(result.message || "Failed to add model");
+				if (form.apiKey) {
+					setLocalStorageItem(`${result.id}_api_key`, form.apiKey);
 				}
-			} catch (error) {
-				console.error("Error adding model:", error);
-				toast.error("Failed to add model");
+				mutate();
+				onOpenChange(false);
+				toast.success("Model added successfully");
+			} catch (error: any) {
+				toast.error(error.message || "Failed to add model");
 			}
 		} else if (mode === "edit" && selectedModel) {
 			try {
-				const response = await fetch(
+				await fetcher<ModelItem>(
 					`/api/organization/model?id=${selectedModel.id}`,
 					{
 						method: "PUT",
@@ -401,23 +388,14 @@ function ModelDialog({
 						}),
 					},
 				);
-
-				const result = await response.json();
-
-				if (response.ok) {
-					if (form.apiKey) {
-						setApiKey(selectedModel.id, form.apiKey);
-					}
-
-					mutate();
-					onOpenChange(false);
-					toast.success("Model updated successfully");
-				} else {
-					toast.error(result.message || "Failed to update model");
+				if (form.apiKey) {
+					setLocalStorageItem(`${selectedModel.id}_api_key`, form.apiKey);
 				}
-			} catch (error) {
-				console.error("Error updating model:", error);
-				toast.error("Failed to update model");
+				mutate();
+				onOpenChange(false);
+				toast.success("Model updated successfully");
+			} catch (error: any) {
+				toast.error(error.message || "Failed to update model");
 			}
 		}
 	};
