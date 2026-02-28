@@ -83,3 +83,21 @@ export interface DatabaseTable {
 	columns: DatabaseColumn[];
 	isSelected?: boolean;
 }
+
+export interface DatabaseTablesResult {
+	connection: {
+		id: string;
+		name: string | null;
+		isActive: boolean | null;
+	};
+	tables: DatabaseTable[];
+}
+
+export interface GetDatabaseConnectionResult {
+	connection: {
+		id: string;
+		name: string | null;
+		isActive: boolean | null;
+	};
+	tables: DatabaseTable[];
+}

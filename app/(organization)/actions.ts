@@ -18,6 +18,8 @@ import {
 	ConnectDatabaseInput,
 	DatabaseTable,
 	UpdateTableSelectionInput,
+	DatabaseTablesResult,
+	GetDatabaseConnectionResult,
 } from "./schema";
 import { Pool } from "pg";
 
@@ -196,7 +198,7 @@ export async function getOrganizationModelInfo({
 export async function getDatabaseTables(
 	organizationId: string,
 	data: ConnectDatabaseInput,
-) {
+): Promise<DatabaseTablesResult> {
 	const { connectionString, name } = data;
 	let pool: Pool | null = null;
 
@@ -266,7 +268,9 @@ export async function getDatabaseTables(
 	}
 }
 
-export async function getDatabaseConnection(organizationId: string) {
+export async function getDatabaseConnection(
+	organizationId: string,
+): Promise<GetDatabaseConnectionResult | null> {
 	const connection = await db.query.databaseConnection.findFirst({
 		where: eq(databaseConnection.organizationId, organizationId),
 	});

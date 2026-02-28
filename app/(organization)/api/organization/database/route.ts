@@ -11,7 +11,7 @@ import {
 import APIError from "@/lib/api/error";
 import { asyncHandler } from "@/lib/api/response";
 
-// POST - api/organization/database/connect
+// POST - /api/organization/database
 export const POST = asyncHandler(async (_, context, validatedData) => {
 	const organizationId = context.session?.user.organizationId;
 
@@ -27,7 +27,7 @@ export const POST = asyncHandler(async (_, context, validatedData) => {
 	};
 }, ConnectDatabaseSchema);
 
-// GET - api/organization/database/connect
+// GET - /api/organization/database
 export const GET = asyncHandler(async (_, context) => {
 	const organizationId = context.session?.user.organizationId;
 
@@ -43,7 +43,7 @@ export const GET = asyncHandler(async (_, context) => {
 	};
 });
 
-// PUT - api/organization/database/connect
+// PUT - /api/organization/database
 export const PUT = asyncHandler(async (_, context, validatedData) => {
 	const organizationId = context.session?.user.organizationId;
 
@@ -59,7 +59,7 @@ export const PUT = asyncHandler(async (_, context, validatedData) => {
 	};
 }, UpdateTableSelectionSchema);
 
-// DELETE - api/organization/database/connect
+// DELETE - /api/organization/database
 export const DELETE = asyncHandler(async (_, context) => {
 	const organizationId = context.session?.user.organizationId;
 
