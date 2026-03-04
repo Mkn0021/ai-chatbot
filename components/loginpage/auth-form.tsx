@@ -77,10 +77,7 @@ const AuthForm: React.FC = () => {
 					}
 				},
 				onSuccess: async () => {
-					const session = await authClient.getSession();
-					const redirectPath =
-						session.data?.user.role === "admin" ? "/dashboard" : "/chat";
-					router.push(redirectPath);
+					router.push("/chat");
 				},
 			},
 		};
