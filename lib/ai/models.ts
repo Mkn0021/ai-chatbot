@@ -29,14 +29,14 @@ export const DEFAULT_MODELS: ChatModel[] = [
 		description: "Efficient and reliable for everyday tasks.",
 	},
 	{
-		id: "gemini/gemini-1.5-flash",
-		name: "Gemini 1.5 Flash",
+		id: "gemini/gemini-2.5-flash",
+		name: "Gemini 2.5 Flash",
 		provider: "google",
 		description: "Fast, lightweight model for quick responses.",
 	},
 	{
-		id: "gemini/gemini-1.5-pro",
-		name: "Gemini 1.5 Pro",
+		id: "gemini/gemini-2.5-pro",
+		name: "Gemini 2.5 Pro",
 		provider: "google",
 		description: "Advanced model for complex tasks and reasoning.",
 	},
