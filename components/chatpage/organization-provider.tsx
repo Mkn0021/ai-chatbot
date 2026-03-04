@@ -1,6 +1,6 @@
 "use client";
 
-import useSWR from "swr";
+import useSWR, { type KeyedMutator } from "swr";
 import { fetcher } from "@/lib/utils";
 import { createContext, useContext, type ReactNode } from "react";
 import type { GetOrganizationByIdResult } from "@/app/(organization)/schema";
@@ -9,7 +9,7 @@ interface OrganizationContextType {
 	organization: GetOrganizationByIdResult | null;
 	isLoading: boolean;
 	error: Error | null;
-	mutate: () => void;
+	mutate: KeyedMutator<GetOrganizationByIdResult>;
 }
 
 const OrganizationContext = createContext<OrganizationContextType | undefined>(
