@@ -2,6 +2,7 @@
 
 import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { SWRProvider } from "@/components/providers/swr-provider";
 
 export default function ChatLayout({
 	children,
@@ -9,13 +10,15 @@ export default function ChatLayout({
 	children: React.ReactNode;
 }) {
 	return (
-		<ThemeProvider
-			attribute="class"
-			defaultTheme="light"
-			enableSystem={false}
-			disableTransitionOnChange
-		>
-			<TooltipProvider>{children}</TooltipProvider>
-		</ThemeProvider>
+		<SWRProvider>
+			<ThemeProvider
+				attribute="class"
+				defaultTheme="light"
+				enableSystem={false}
+				disableTransitionOnChange
+			>
+				<TooltipProvider>{children}</TooltipProvider>
+			</ThemeProvider>
+		</SWRProvider>
 	);
 }
