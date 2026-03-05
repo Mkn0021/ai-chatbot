@@ -7,8 +7,6 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { DataStreamProvider } from "@/components/chatpage/data-stream-provider";
 import { OrganizationProvider } from "@/components/chatpage/organization-provider";
 
-const DEFAULT_AVATER = "/images/default-avatar.png";
-
 export default function Layout({ children }: { children: React.ReactNode }) {
 	return (
 		<>
@@ -34,16 +32,9 @@ async function SidebarWrapper({ children }: { children: React.ReactNode }) {
 	]);
 	const isCollapsed = cookieStore.get("sidebar_state")?.value !== "true";
 
-	const user = session?.user
-		? {
-				...session.user,
-				image: session.user.image ?? DEFAULT_AVATER,
-			}
-		: undefined;
-
 	return (
 		<SidebarProvider defaultOpen={!isCollapsed}>
-			<AppSidebar user={user} />
+			<AppSidebar user={session?.user} />
 			<SidebarInset>{children}</SidebarInset>
 		</SidebarProvider>
 	);

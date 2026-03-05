@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
 import { Plus, Trash } from "lucide-react";
-import { User } from "@/app/(user)/schema";
+import { User } from "better-auth";
 import { getChatHistoryPaginationKey, SidebarHistory } from "./sidebar-history";
 import { SidebarUserNav } from "./sidebar-user-nav";
 import { Button } from "@/components/ui/button";

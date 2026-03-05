@@ -4,7 +4,7 @@ import Image from "next/image";
 import { toast } from "sonner";
 import { useState } from "react";
 import { useTheme } from "next-themes";
-import type { User } from "@/app/(user)/schema";
+import type { User } from "better-auth";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/app/(auth)/actions";
 import { ChevronUp, Loader2 } from "lucide-react";
@@ -21,6 +21,7 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function SidebarUserNav({ user }: { user: User }) {
 	const router = useRouter();
@@ -50,13 +51,10 @@ export function SidebarUserNav({ user }: { user: User }) {
 								className="bg-background data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground h-10 focus-visible:ring-0"
 								data-testid="user-nav-button"
 							>
-								<Image
-									alt={user.name ?? "User Avatar"}
-									className="rounded-full"
-									height={24}
-									src={user.image!}
-									width={24}
-								/>
+								<Avatar>
+									<AvatarImage src={user?.image!} alt={user?.name} />
+									<AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+								</Avatar>
 								<span className="truncate" data-testid="user-name">
 									{user?.name}
 								</span>

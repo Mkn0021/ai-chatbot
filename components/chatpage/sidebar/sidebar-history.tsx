@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/sidebar";
 import { fetcher } from "@/lib/utils";
 import type { Chat } from "@/lib/db/schemas";
-import type { User } from "@/app/(user)/schema";
+import type { User } from "better-auth";
 import { ChatItem } from "./sidebar-history-item";
 import { Spinner } from "@/components/ui/spinner";
 
