@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
@@ -8,6 +9,28 @@ import { Chat } from "@/components/chatpage/chat";
 import { convertToUIMessages } from "@/lib/utils";
 import { getChatById, getMessagesByChatId } from "@/app/(chat)/actions";
 import { DataStreamHandler } from "@/components/chatpage/data-stream-handler";
+
+export async function generateMetadata({
+	params,
+}: {
+	params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+	const { id } = await params;
+	const chat = await getChatById({ id });
+
+	if (!chat) {
+		return {
+			title: "Chat Not Found - AI Chatbot",
+		};
+	}
+
+	return {
+		title: chat.title || "Chat - AI Chatbot",
+		description: chat.title
+			? `Continue your conversation: ${chat.title}`
+			: "Interact with our AI-powered chatbot",
+	};
+}
 
 export default function Page(props: { params: Promise<{ id: string }> }) {
 	return (

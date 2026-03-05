@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { Metadata } from "next";
 import { cn } from "@/lib/utils";
 import { Suspense } from "react";
 import { Logo } from "@/components/ui/logo";
@@ -8,6 +9,12 @@ import {
 	SectionHeader,
 	SectionSubHeader,
 } from "@/components/ui/section-header";
+
+export const metadata: Metadata = {
+	title: "Login - AI Chatbot",
+	description:
+		"Sign in to access your AI-powered chatbot for data querying and analysis.",
+};
 
 export default function Login() {
 	return (

@@ -1,9 +1,15 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { generateUUID } from "@/lib/utils";
 import { DEFAULT_MODELS } from "@/lib/ai/models";
 import { Chat } from "@/components/chatpage/chat";
 import { DataStreamHandler } from "@/components/chatpage/data-stream-handler";
+
+export const metadata: Metadata = {
+	title: "New Chat - AI Chatbot",
+	description: "Start a new conversation with our AI-powered chatbot.",
+};
 
 export default function Page() {
 	return (
