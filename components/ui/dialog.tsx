@@ -39,7 +39,7 @@ function DialogOverlay({
 		<DialogPrimitive.Overlay
 			data-slot="dialog-overlay"
 			className={cn(
-				"data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 fixed inset-0 isolate z-50 bg-black/80 duration-100 supports-backdrop-filter:backdrop-blur-xs",
+				"data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 fixed inset-0 isolate z-50 bg-black/80 duration-100 supports-backdrop-filter:backdrop-blur-xs dark:bg-white/10",
 				className,
 			)}
 			{...props}
@@ -51,9 +51,11 @@ function DialogContent({
 	className,
 	children,
 	showCloseButton = true,
+	closeButtonClassName,
 	...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
 	showCloseButton?: boolean;
+	closeButtonClassName?: string;
 }) {
 	return (
 		<DialogPortal>
@@ -71,7 +73,7 @@ function DialogContent({
 					<DialogPrimitive.Close data-slot="dialog-close" asChild>
 						<Button
 							variant="ghost"
-							className="absolute top-6 right-4"
+							className={cn("absolute top-6 right-4", closeButtonClassName)}
 							size="icon-sm"
 						>
 							<XIcon />

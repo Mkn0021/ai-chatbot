@@ -8,17 +8,17 @@ export const Greeting = () => {
 		>
 			<motion.div
 				animate={{ opacity: 1, y: 0 }}
-				className="text-4xl font-bold md:text-6xl"
+				className="text-4xl font-bold text-gray-900 md:text-6xl dark:text-white"
 				exit={{ opacity: 0, y: 10 }}
 				initial={{ opacity: 0, y: 10 }}
 				transition={{ delay: 0.5 }}
 			>
 				Hello
-				<span className="text-[#FF7757]"> there!</span>
+				<span className="text-[#FF7757] dark:text-[#FF8C6B]"> there!</span>
 			</motion.div>
 			<motion.div
 				animate={{ opacity: 1, y: 0 }}
-				className="text-2xl text-gray-500 md:text-4xl"
+				className="text-2xl text-gray-500 md:text-4xl dark:text-gray-400"
 				exit={{ opacity: 0, y: 10 }}
 				initial={{ opacity: 0, y: 10 }}
 				transition={{ delay: 0.6 }}

@@ -526,7 +526,7 @@ function PureModelSelectorCompact({
 					<ModelSelectorName>{selectedModel.name}</ModelSelectorName>
 				</Button>
 			</ModelSelectorTrigger>
-			<ModelSelectorContent className="px-2 py-4">
+			<ModelSelectorContent>
 				<ModelSelectorInput placeholder="Search models..." />
 				<DropdownMenuSeparator />
 				<ModelSelectorList>

@@ -12,7 +12,9 @@ export function Logo({ className }: { className?: string }) {
 			)}
 		>
 			<Icons.logo />
-			<span className="text-lg font-medium text-black">shape.ai</span>
+			<span className="text-lg font-medium text-black dark:text-white">
+				shape.ai
+			</span>
 		</Link>
 	);
 }

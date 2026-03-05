@@ -6,12 +6,12 @@ export const Icons = {
 			viewBox="0 0 28 29"
 			fill="none"
 			xmlns="http://www.w3.org/2000/svg"
-			className="h-10 w-10"
+			className="h-10 w-10 text-orange-500 dark:text-orange-400"
 		>
 			<g filter="url(#filter0_di_966_1877)">
 				<path
 					d="M4.53553 16.0355C2.58291 14.0829 2.58291 10.9171 4.53553 8.96447L10.1924 3.30761C12.145 1.35499 15.3108 1.35499 17.2635 3.30761L22.9203 8.96447C24.8729 10.9171 24.8729 14.0829 22.9203 16.0355L17.2635 21.6924C15.3108 23.645 12.145 23.645 10.1924 21.6924L4.53553 16.0355Z"
-					fill="#FB4C01"
+					fill="currentColor"
 				></path>
 			</g>
 			<defs>

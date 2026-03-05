@@ -3,11 +3,6 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Building2, Database, Lock, Users, Zap } from "lucide-react";
 
 const menuItems = [
@@ -62,18 +57,12 @@ export const SettingsSidebar = ({
 					<SidebarMenuItem key={item.id}>
 						<SidebarMenuButton
 							isActive={isActive}
+							tooltip={item.label}
 							onClick={() => onTabChange(item.id)}
 							className="h-auto flex-col items-start gap-1 px-4 py-3"
 						>
 							<div className="flex w-full items-center justify-center gap-3 sm:justify-start">
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<Icon className="h-5 w-5 shrink-0" />
-									</TooltipTrigger>
-									<TooltipContent align="start" side="right">
-										{item.label}
-									</TooltipContent>
-								</Tooltip>
+								<Icon className="h-5 w-5 shrink-0" />
 								<div className="hidden w-full flex-col items-start justify-start sm:flex">
 									<span className="text-sm font-medium">{item.label}</span>
 									<span className="text-muted-foreground text-xs">

@@ -41,7 +41,11 @@ export const ModelSelectorContent = ({
 	title = "Model Selector",
 	...props
 }: ModelSelectorContentProps) => (
-	<DialogContent className={cn("p-0", className)} {...props}>
+	<DialogContent
+		className={cn("p-0", className)}
+		closeButtonClassName="top-2 right-2"
+		{...props}
+	>
 		<DialogTitle className="sr-only">{title}</DialogTitle>
 		<Command className="**:data-[slot=command-input-wrapper]:h-auto">
 			{children}
