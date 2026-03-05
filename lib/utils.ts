@@ -17,8 +17,10 @@ export const fetcher = async <T>(
 	const response = await fetch(input, init);
 
 	if (!response.ok) {
-		const { code, cause } = await response.json();
-		throw new APIError(cause, response.status, { code });
+		const body = await response.json();
+		throw new APIError(body.error ?? body.cause, response.status, {
+			code: body.code,
+		});
 	}
 
 	// AsyncHandler by Default return data : { data: T , message: string }
@@ -34,8 +36,10 @@ export async function fetchWithErrorHandlers(
 		const response = await fetch(input, init);
 
 		if (!response.ok) {
-			const { code, cause } = await response.json();
-			throw new APIError(cause, response.status, { code });
+			const body = await response.json();
+			throw new APIError(body.error ?? body.cause, response.status, {
+				code: body.code,
+			});
 		}
 
 		return response;

@@ -125,48 +125,30 @@ export async function POST(req: Request) {
 		const stream = createUIMessageStream({
 			originalMessages: isToolApprovalFlow ? uiMessages : undefined,
 			execute: async ({ writer: dataStream }) => {
-				try {
-					const result = streamText({
-						model: getLanguageModel(input.selectedChatModel, input.apiKey),
-						system: getSystemPrompt({
-							modelId: input.selectedChatModel,
-							databaseContext: organization.databaseContext,
-						}),
-						messages: modelMessages,
-						stopWhen: stepCountIs(5),
-						experimental_activeTools: ["sqlQuery"],
-						tools: {
-							sqlQuery: sqlQueryTool({ dataStream, session }),
-						},
-						experimental_telemetry: {
-							isEnabled: false,
-							functionId: "stream-text",
-						},
-					});
+				const result = streamText({
+					model: getLanguageModel(input.selectedChatModel, input.apiKey),
+					system: getSystemPrompt({
+						modelId: input.selectedChatModel,
+						databaseContext: organization.databaseContext,
+					}),
+					messages: modelMessages,
+					stopWhen: stepCountIs(5),
+					experimental_activeTools: ["sqlQuery"],
+					tools: {
+						sqlQuery: sqlQueryTool({ dataStream, session }),
+					},
+					experimental_telemetry: {
+						isEnabled: false,
+						functionId: "stream-text",
+					},
+				});
 
-					dataStream.merge(result.toUIMessageStream({ sendReasoning: true }));
+				dataStream.merge(result.toUIMessageStream({ sendReasoning: true }));
 
-					if (titlePromise) {
-						const title = await titlePromise;
-						dataStream.write({ type: "data-chat-title", data: title });
-						updateChatTitleById({ chatId: input.id, title });
-					}
-				} catch (error) {
-					// Handle API key validation errors from AI providers
-					const errorMessage =
-						error instanceof Error ? error.message : String(error);
-					if (
-						errorMessage.includes("API key") ||
-						errorMessage.includes("apiKey") ||
-						errorMessage.includes("401") ||
-						errorMessage.includes("Unauthorized") ||
-						errorMessage.includes("Invalid authentication")
-					) {
-						throw APIError.unauthorized(
-							"Invalid API key. Please check your API key in the settings.",
-						);
-					}
-					throw error;
+				if (titlePromise) {
+					const title = await titlePromise;
+					dataStream.write({ type: "data-chat-title", data: title });
+					updateChatTitleById({ chatId: input.id, title });
 				}
 			},
 			generateId: generateUUID,
@@ -207,7 +189,8 @@ export async function POST(req: Request) {
 					});
 				}
 			},
-			onError: () => "Oops, an error occurred!",
+			onError: (error) =>
+				error instanceof Error ? error.message : "An error occurred",
 		});
 
 		return createUIMessageStreamResponse({

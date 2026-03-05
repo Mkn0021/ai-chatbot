@@ -1,7 +1,6 @@
 "use client";
 
 import { toast } from "sonner";
-import APIError from "@/lib/api/error";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import useSWR, { useSWRConfig } from "swr";
@@ -142,9 +141,20 @@ export function Chat({
 			mutate(unstable_serialize(getChatHistoryPaginationKey));
 		},
 		onError: (error) => {
-			if (error instanceof APIError) {
-				toast.error(error.message);
-			}
+			const message =
+				error instanceof Error ? error.message : "An error occurred";
+			const isApiKeyError =
+				message.includes("API key") ||
+				message.includes("api_key") ||
+				message.includes("apiKey") ||
+				message.includes("401") ||
+				message.includes("Unauthorized") ||
+				message.includes("Invalid authentication");
+			toast.error(
+				isApiKeyError
+					? "Incorrect API key. Please check your settings."
+					: message,
+			);
 		},
 	});
 
