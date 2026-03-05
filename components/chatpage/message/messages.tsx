@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Greeting } from "../greeting";
 import type { ChatMessage } from "@/types";
 import type { Vote } from "@/lib/db/schemas";
@@ -106,4 +107,4 @@ function PureMessages({
 	);
 }
 
-export const Messages = PureMessages;
+export const Messages = memo(PureMessages);

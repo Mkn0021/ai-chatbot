@@ -12,7 +12,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 		<>
 			<Script
 				src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"
-				strategy="beforeInteractive"
+				strategy="lazyOnload"
 			/>
 			<DataStreamProvider>
 				<OrganizationProvider>

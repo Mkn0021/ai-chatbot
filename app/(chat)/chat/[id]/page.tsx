@@ -19,14 +19,19 @@ export default function Page(props: { params: Promise<{ id: string }> }) {
 
 async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
 	const { id } = await params;
-	const chat = await getChatById({ id });
+
+	const [chat, headersList, cookieStore] = await Promise.all([
+		getChatById({ id }),
+		headers(),
+		cookies(),
+	]);
 
 	if (!chat) {
 		redirect("/chat");
 	}
 
 	const session = await auth.api.getSession({
-		headers: await headers(),
+		headers: headersList,
 	});
 
 	if (chat.visibility === "private") {
@@ -42,8 +47,6 @@ async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
 	const messagesFromDb = await getMessagesByChatId({ id });
 
 	const uiMessages = convertToUIMessages(messagesFromDb);
-
-	const cookieStore = await cookies();
 
 	// Get model from cookie or default
 	const modelCookie = cookieStore.get("chat-model");
