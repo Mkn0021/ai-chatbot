@@ -50,10 +50,9 @@ export const ToolRenderer = ({
 				<Tool className="w-full" defaultOpen={true}>
 					<ToolHeader state={state} type={toolType} />
 					<ToolContent>
-						<ToolOutput
-							output={JSON.stringify(part.output, null, 2)}
-							errorText={part.errorText}
-						/>
+						<div className="text-muted-foreground px-4 py-3 text-sm">
+							{part.errorText || `${toolName} lookup succeeded.`}
+						</div>
 					</ToolContent>
 				</Tool>
 			</div>

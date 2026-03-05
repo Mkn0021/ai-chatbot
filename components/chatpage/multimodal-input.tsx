@@ -319,7 +319,7 @@ function PureMultimodalInput({
 				className="border-border bg-background focus-within:border-border hover:border-muted-foreground/50 rounded-xl border p-3 shadow-xs transition-all duration-200"
 				onSubmit={(event) => {
 					event.preventDefault();
-					if (status !== "ready") {
+					if (status === "submitted" || status === "streaming") {
 						toast.error("Please wait for the model to finish its response!");
 					} else {
 						submitForm();
@@ -386,7 +386,7 @@ function PureMultimodalInput({
 						/>
 					</PromptInputTools>
 
-					{status === "submitted" ? (
+					{status === "submitted" || status === "streaming" ? (
 						<StopButton setMessages={setMessages} stop={stop} />
 					) : (
 						<PromptInputSubmit
@@ -441,7 +441,9 @@ function PureAttachmentsButton({
 		<Button
 			className="hover:bg-accent aspect-square h-8 rounded-lg p-1 transition-colors"
 			data-testid="attachments-button"
-			disabled={status !== "ready" || isReasoningModel}
+			disabled={
+				status === "submitted" || status === "streaming" || isReasoningModel
+			}
 			onClick={(event) => {
 				event.preventDefault();
 				fileInputRef.current?.click();
@@ -568,7 +570,8 @@ function PureStopButton({
 }) {
 	return (
 		<Button
-			className="bg-foreground text-background hover:bg-foreground/90 disabled:bg-muted disabled:text-muted-foreground size-7 rounded-full p-1 transition-colors duration-200"
+			className="size-7 rounded-full p-1 transition-colors duration-200"
+			variant={"default"}
 			data-testid="stop-button"
 			onClick={(event) => {
 				event.preventDefault();

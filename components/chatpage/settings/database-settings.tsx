@@ -34,13 +34,16 @@ export function DatabaseSettings() {
 	const [isConnecting, setIsConnecting] = useState(false);
 	const [localTables, setLocalTables] = useState<DatabaseTable[]>([]);
 
-	const { data: connectionData, mutate } =
-		useSWR<GetDatabaseConnectionResult | null>(
-			"/api/organization/database",
-			fetcher,
-		);
+	const {
+		data: connectionData,
+		mutate,
+		isLoading,
+	} = useSWR<GetDatabaseConnectionResult | null>(
+		"/api/organization/database",
+		fetcher,
+	);
 
-	const isConnected = connectionData !== null;
+	const isConnected = !!connectionData;
 	const savedTables = connectionData?.tables || [];
 	const displayTables = localTables.length > 0 ? localTables : savedTables;
 
@@ -173,12 +176,17 @@ export function DatabaseSettings() {
 							</span>
 						</Button>
 					</div>
-					{isConnected && (
+					{isLoading ? (
+						<div className="text-muted-foreground flex items-center gap-2 text-sm">
+							<Loader2 className="h-4 w-4 animate-spin" />
+							Checking connection...
+						</div>
+					) : isConnected ? (
 						<div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
 							<CheckCircle2 className="h-4 w-4" />
 							Connected successfully
 						</div>
-					)}
+					) : null}
 				</div>
 
 				{isConnected && hasChanges && (
