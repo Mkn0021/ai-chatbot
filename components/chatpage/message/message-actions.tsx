@@ -7,6 +7,7 @@ import { useCopyToClipboard } from "usehooks-ts";
 import type { Vote } from "@/lib/db/schemas/ai-chat";
 import { Copy, Edit, ThumbsDown, ThumbsUp } from "lucide-react";
 import { Action, Actions } from "@/components/ai-element/actions";
+import { fetcher } from "@/lib/utils";
 
 export function PureMessageActions({
 	chatId,
@@ -77,12 +78,12 @@ export function PureMessageActions({
 				data-testid="message-upvote"
 				disabled={vote?.isUpvoted}
 				onClick={() => {
-					const upvote = fetch("/api/vote", {
+					const upvote = fetcher("/api/vote", {
 						method: "PATCH",
 						body: JSON.stringify({
 							chatId,
 							messageId: message.id,
-							type: "up",
+							isUpvoted: true,
 						}),
 					});
 
@@ -126,12 +127,12 @@ export function PureMessageActions({
 				data-testid="message-downvote"
 				disabled={vote && !vote.isUpvoted}
 				onClick={() => {
-					const downvote = fetch("/api/vote", {
+					const downvote = fetcher("/api/vote", {
 						method: "PATCH",
 						body: JSON.stringify({
 							chatId,
 							messageId: message.id,
-							type: "down",
+							isUpvoted: false,
 						}),
 					});
 
