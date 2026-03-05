@@ -1,7 +1,8 @@
 import "./globals.css";
+import { Toaster } from "sonner";
 import type { Metadata } from "next";
 import { Inter, Manrope } from "next/font/google";
-import { AppProviders } from "@/components/homepage/app-providers";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope" });
@@ -24,7 +25,9 @@ export default function RootLayout({
 			className={`${inter.variable} ${manrope.variable}`}
 		>
 			<body className="antialiased">
-				<AppProviders>{children}</AppProviders>
+				<Toaster position="top-right" />
+				{children}
+				<Analytics />
 			</body>
 		</html>
 	);
