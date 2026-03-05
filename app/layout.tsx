@@ -1,9 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Toaster } from "@/components/ui/sonner";
-import { Analytics } from "@vercel/analytics/next";
 import { Inter, Manrope } from "next/font/google";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { AppProviders } from "@/components/homepage/app-providers";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope" });
@@ -20,11 +18,13 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en" className={`${inter.variable} ${manrope.variable}`}>
+		<html
+			lang="en"
+			suppressHydrationWarning
+			className={`${inter.variable} ${manrope.variable}`}
+		>
 			<body className="antialiased">
-				<Toaster position="top-right" />
-				<TooltipProvider>{children}</TooltipProvider>
-				<Analytics />
+				<AppProviders>{children}</AppProviders>
 			</body>
 		</html>
 	);
