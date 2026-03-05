@@ -1,11 +1,11 @@
-import { Icons } from "@/components/ui/icons";
+import {
+	ClaudeIcon,
+	HuggingfaceIcon,
+	GeminiIcon,
+	OpenAIIcon,
+} from "@/components/ui/icons";
 
-const AI_BRANDS = [
-	Icons.gemini,
-	Icons.chatgpt,
-	Icons.claude,
-	Icons.huggingface,
-];
+const AI_BRANDS = [GeminiIcon, OpenAIIcon, ClaudeIcon, HuggingfaceIcon];
 
 export const BrandSection = () => {
 	return (
@@ -20,7 +20,7 @@ export const BrandSection = () => {
 				{AI_BRANDS.map((Brand, idx) => (
 					<div
 						key={idx}
-						className="mx-auto flex aspect-3/1 w-full max-w-32 items-center justify-center"
+						className="mx-auto flex w-full max-w-32 items-center justify-center"
 					>
 						<Brand className="h-auto w-full object-contain" />
 					</div>

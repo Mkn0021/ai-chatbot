@@ -1,6 +1,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import { Icons } from "@/components/ui/icons";
+import { LogoIcon } from "@/components/ui/icons";
 import { Database, Sparkles, BarChart3, FileCode } from "lucide-react";
 
 export function QueryProcessor() {
@@ -10,7 +10,7 @@ export function QueryProcessor() {
 			<Circle className="size-45" />
 			<Circle className="size-25" variant="secondary" />
 			<Circle variant="secondary">
-				<Icons.logo />
+				<LogoIcon />
 			</Circle>
 			<IconBall className="top-5 right-1/2">
 				<Database />

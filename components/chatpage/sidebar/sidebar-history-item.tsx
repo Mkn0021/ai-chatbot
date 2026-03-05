@@ -18,7 +18,7 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Icons } from "@/components/ui/icons";
+import { CheckFilledIcon } from "@/components/ui/icons";
 
 const PureChatItem = ({
 	chat,
@@ -73,7 +73,7 @@ const PureChatItem = ({
 										<Lock size={12} />
 										<span>Private</span>
 									</div>
-									{visibilityType === "private" ? <Icons.checkFilled /> : null}
+									{visibilityType === "private" ? <CheckFilledIcon /> : null}
 								</DropdownMenuItem>
 								<DropdownMenuItem
 									className="cursor-pointer flex-row justify-between"
@@ -85,7 +85,7 @@ const PureChatItem = ({
 										<Globe />
 										<span>Public</span>
 									</div>
-									{visibilityType === "public" ? <Icons.checkFilled /> : null}
+									{visibilityType === "public" ? <CheckFilledIcon /> : null}
 								</DropdownMenuItem>
 							</DropdownMenuSubContent>
 						</DropdownMenuPortal>

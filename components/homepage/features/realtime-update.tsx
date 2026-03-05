@@ -1,6 +1,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import { Icons } from "@/components/ui/icons";
+import { UserIcon } from "@/components/ui/icons";
 import { AnimatedList } from "@/components/ui/animated-list";
 import {
 	Database,
@@ -84,7 +84,7 @@ export function ProfileSection() {
 	return (
 		<div className="flex items-center gap-4">
 			<div className="flex size-12 items-center justify-center rounded-full border-2 bg-white p-3">
-				<Icons.user />
+				<UserIcon />
 			</div>
 			<div className="space-y-1">
 				<p className="bg-linear-to-r from-gray-800 to-gray-600 bg-clip-text text-xs font-semibold text-transparent md:text-lg">

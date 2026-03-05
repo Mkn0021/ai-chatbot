@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Icons } from "./icons";
+import { LogoIcon } from "./icons";
 import { cn } from "@/lib/utils";
 
 export function Logo({ className }: { className?: string }) {
@@ -11,7 +11,7 @@ export function Logo({ className }: { className?: string }) {
 				className,
 			)}
 		>
-			<Icons.logo />
+			<LogoIcon />
 			<span className="text-lg font-medium text-black dark:text-white">
 				shape.ai
 			</span>

@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, Globe, Lock } from "lucide-react";
 import { VisibilityType } from "@/app/(chat)/schema";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
-import { Icons } from "@/components/ui/icons";
+import { CheckFilledIcon } from "@/components/ui/icons";
 
 const visibilities: Array<{
 	id: VisibilityType;
@@ -99,7 +99,7 @@ export function VisibilitySelector({
 							)}
 						</div>
 						<div className="text-foreground dark:text-foreground opacity-0 group-data-[active=true]/item:opacity-100">
-							<Icons.checkFilled />
+							<CheckFilledIcon />
 						</div>
 					</DropdownMenuItem>
 				))}

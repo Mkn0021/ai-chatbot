@@ -3,8 +3,16 @@
 import React, { forwardRef, useRef, useMemo } from "react";
 
 import { cn } from "@/lib/utils";
-import { Icons } from "@/components/ui/icons";
 import { AnimatedBeam } from "@/components/ui/animated-beam";
+import {
+	CalenderIcon,
+	ChatgptIcon,
+	EmailIcon,
+	MongodbIcon,
+	NotionIcon,
+	PostgresqlIcon,
+	UserIcon,
+} from "@/components/ui/icons";
 
 const Circle = forwardRef<
 	HTMLDivElement,
@@ -27,11 +35,11 @@ Circle.displayName = "Circle";
 
 // Integrations config
 const INTEGRATIONS = [
-	{ icon: Icons.postgresql, label: "PostgreSQL" },
-	{ icon: Icons.mongodb, label: "MongoDB" },
-	{ icon: Icons.email, label: "Email" },
-	{ icon: Icons.calender, label: "Google Calendar" },
-	{ icon: Icons.notion, label: "Notion" },
+	{ icon: PostgresqlIcon, label: "PostgreSQL" },
+	{ icon: MongodbIcon, label: "MongoDB" },
+	{ icon: EmailIcon, label: "Email" },
+	{ icon: CalenderIcon, label: "Google Calendar" },
+	{ icon: NotionIcon, label: "Notion" },
 ];
 
 export function AnimatedBeamMultipleOutput({
@@ -60,12 +68,12 @@ export function AnimatedBeamMultipleOutput({
 			<div className="flex size-full max-w-lg flex-row items-stretch justify-between gap-10">
 				<div className="flex flex-col justify-center">
 					<Circle ref={userRef}>
-						<Icons.user />
+						<UserIcon />
 					</Circle>
 				</div>
 				<div className="flex flex-col items-center justify-center">
 					<Circle ref={aiRef} className="size-16">
-						<Icons.openai />
+						<ChatgptIcon />
 					</Circle>
 				</div>
 				<div className="flex flex-col justify-center gap-2">
