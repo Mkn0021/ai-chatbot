@@ -7,7 +7,7 @@ import { Footer } from "@/components/homepage/footer";
 
 export default function Home() {
 	return (
-		<div className="flex min-h-screen flex-col items-center justify-center gap-8 font-sans">
+		<div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col items-center justify-center gap-30 p-4 font-sans md:gap-40 md:px-8">
 			<Navbar />
 			<HeroSection />
 			<BrandSection />

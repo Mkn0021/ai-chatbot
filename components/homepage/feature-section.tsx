@@ -6,10 +6,7 @@ import { RealtimeUpdates } from "./features/realtime-update";
 
 export const FeatureSection = () => {
 	return (
-		<section
-			className="mx-auto w-full max-w-7xl px-4 py-4 md:my-20 md:px-8 md:py-20"
-			id="product"
-		>
+		<section className="w-full" id="product">
 			<Header />
 			<div className="cols-1 mx-auto mt-20 grid max-w-3xl auto-rows-[25rem] gap-4 lg:max-w-none lg:grid-cols-5">
 				<BentoCard

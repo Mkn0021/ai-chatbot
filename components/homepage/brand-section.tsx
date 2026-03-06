@@ -9,7 +9,7 @@ const AI_BRANDS = [GeminiIcon, OpenAIIcon, ClaudeIcon, HuggingfaceIcon];
 
 export const BrandSection = () => {
 	return (
-		<section className="w-full overflow-hidden px-4 py-12 md:my-20 md:px-8 md:py-4">
+		<section className="w-full overflow-hidden">
 			<div className="mb-6 text-center">
 				<h2 className="font-inter text-xl font-semibold text-[#3D3D3D] sm:text-[22px]">
 					Connect with Your Favorite AI Model

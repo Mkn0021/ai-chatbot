@@ -5,7 +5,8 @@ import { MobilePhone } from "@/components/ui/mobile-phone";
 
 export const HeroSection = () => {
 	return (
-		<section className="relative mx-auto my-2 flex max-w-7xl flex-col items-center justify-center overflow-hidden rounded-b-3xl bg-linear-to-t from-[rgba(247,135,67,1)] via-[rgba(255,244,239,1)] to-[rgba(255,255,255,1)] px-4 pt-32 md:my-20 md:px-8">
+		<section className="relative flex w-full flex-col items-center justify-center pt-32 md:pt-52">
+			<div className="absolute inset-y-0 left-1/2 -z-10 w-screen max-w-[76rem] -translate-x-1/2 rounded-b-3xl bg-linear-to-t from-[rgba(247,135,67,1)] via-[rgba(255,244,239,1)] to-white" />
 			<h1 className="relative z-20 mx-auto mb-4 max-w-6xl text-center text-4xl font-semibold tracking-tight text-balance text-gray-700 md:text-7xl">
 				<span className="inline-block align-top leading-[0.5] text-balance decoration-inherit md:leading-[0.8]">
 					<HeroHeading title="Build " cta_title="Personalized AI" />
@@ -24,7 +25,7 @@ export const HeroSection = () => {
 			>
 				<Link href="/login">Get Started</Link>
 			</Button>
-			<div className="relative min-h-84 w-full pt-8">
+			<div className="relative min-h-84 w-full overflow-hidden pt-8">
 				<div className="absolute top-0 right-0 left-0 z-10">
 					<MobilePhone />
 				</div>

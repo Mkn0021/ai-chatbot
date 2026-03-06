@@ -7,9 +7,9 @@ import {
 
 export const StatSection = () => {
 	return (
-		<section className="relative w-full py-20">
+		<section className="relative w-full">
 			<Header />
-			<div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 md:grid-cols-2 lg:grid-cols-4">
+			<div className="relative z-10 grid w-full grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
 				<Card title={"5x"} subtitle={"Faster insights vs manual queries"} />
 				<Card title={"100%"} subtitle={"Works locally & securely"} />
 				<Card title={"10+"} subtitle={"Databases supported"} />
