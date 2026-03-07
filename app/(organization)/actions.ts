@@ -60,9 +60,31 @@ export async function getOrganizationById({
 	organizationId,
 }: {
 	organizationId: string;
+}) {
+	const org = await db.query.organization.findFirst({
+		where: eq(organization.id, organizationId),
+		columns: {
+			createdAt: false,
+		},
+	});
+
+	if (!org) {
+		throw APIError.notFound("Organization not found");
+	}
+
+	return org;
+}
+
+export async function getOrganizationWithModels({
+	organizationId,
+}: {
+	organizationId: string;
 }): Promise<GetOrganizationByIdResult> {
 	const org = await db.query.organization.findFirst({
 		where: eq(organization.id, organizationId),
+		columns: {
+			createdAt: false,
+		},
 		with: {
 			databaseConnection: {
 				columns: {
@@ -233,7 +255,7 @@ export async function getDatabaseTables(
 						'data_type', data_type
 					) AS column_obj
 				FROM information_schema.columns
-				WHERE table_schema NOT IN ('pg_catalog', 'information_schema', 'drizzle')
+				WHERE table_schema = 'public'
 			) t
 			GROUP BY table_schema, table_name
 			ORDER BY table_schema, table_name;

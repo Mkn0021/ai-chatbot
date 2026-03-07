@@ -1,6 +1,5 @@
 "use client";
 
-import { type KeyedMutator } from "swr";
 import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -46,8 +45,6 @@ import {
 	setLocalStorageItem,
 } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
-import { useOrganization } from "@/components/chatpage/organization-provider";
-import type { GetOrganizationByIdResult } from "@/app/(organization)/schema";
 import { fetcher, useApi } from "@/lib/api/client";
 
 type ModelStatus = "active" | "inactive" | "error";
@@ -68,10 +65,7 @@ export function ChatModelsSettings() {
 		data: models,
 		error,
 		isLoading,
-		mutate,
 	} = useApi<ModelItem[]>("/api/organization/model");
-
-	const { mutate: mutateOrganization } = useOrganization();
 
 	const [addDialogOpen, setAddDialogOpen] = useState(false);
 	const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -109,7 +103,6 @@ export function ChatModelsSettings() {
 				open={addDialogOpen}
 				onOpenChange={setAddDialogOpen}
 				mode="add"
-				mutateOrganization={mutateOrganization}
 			/>
 
 			<ModelDialog
@@ -117,7 +110,6 @@ export function ChatModelsSettings() {
 				onOpenChange={setEditDialogOpen}
 				mode="edit"
 				selectedModel={selectedModel}
-				mutateOrganization={mutateOrganization}
 			/>
 
 			{isLoading ? (
@@ -131,7 +123,6 @@ export function ChatModelsSettings() {
 						setSelectedModel(model);
 						setEditDialogOpen(true);
 					}}
-					mutateOrganization={mutateOrganization}
 				/>
 			)}
 		</div>
@@ -141,27 +132,24 @@ export function ChatModelsSettings() {
 interface ChatModelsTableProps {
 	models: ModelItem[];
 	onEdit: (model: ModelItem) => void;
-	mutateOrganization: KeyedMutator<GetOrganizationByIdResult>;
 }
 
-const ChatModelsTable = ({
-	models,
-	onEdit,
-	mutateOrganization,
-}: ChatModelsTableProps) => {
+const ChatModelsTable = ({ models, onEdit }: ChatModelsTableProps) => {
 	const handleDeleteModel = async (modelId: string) => {
 		removeLocalStorageItem(`${modelId}_api_key`);
-		await fetcher(`/api/organization/model?id=${modelId}`, {
-			method: "DELETE",
-			mutator: (current: ModelItem[] | undefined) =>
-				(current ?? []).filter((m) => m.id !== modelId),
-			toast: {
-				loading: "Deleting model...",
-				success: "Model deleted successfully",
-				error: (e) => e.message || "Failed to delete model",
+
+		await fetcher<ModelItem, ModelItem[]>(
+			`/api/organization/model?id=${modelId}`,
+			{
+				method: "DELETE",
+				cacheKey: "/api/organization/model",
+				toast: {
+					loading: "Deleting model...",
+					success: "Model deleted successfully",
+					error: (e) => e.message || "Failed to delete model",
+				},
 			},
-		});
-		await mutateOrganization();
+		);
 	};
 
 	const copyToClipboard = async (modelId: string) => {
@@ -317,7 +305,6 @@ interface ModelDialogProps {
 	onOpenChange: (open: boolean) => void;
 	mode: "add" | "edit";
 	selectedModel?: ModelItem | null;
-	mutateOrganization: KeyedMutator<GetOrganizationByIdResult>;
 }
 
 function ModelDialog({
@@ -325,7 +312,6 @@ function ModelDialog({
 	onOpenChange,
 	mode,
 	selectedModel,
-	mutateOrganization,
 }: ModelDialogProps) {
 	const [form, setForm] = useState({
 		id: "",
@@ -374,7 +360,7 @@ function ModelDialog({
 						baseUrl: form.baseUrl || null,
 						status: "active",
 					}),
-					mutator: (current, response) => [...(current ?? []), response],
+					cacheKey: "/api/organization/model",
 					toast: {
 						loading: "Adding model...",
 						success: "Model added successfully",
@@ -382,8 +368,10 @@ function ModelDialog({
 					},
 				},
 			);
-			if (form.apiKey) setLocalStorageItem(`${result.id}_api_key`, form.apiKey);
-			await mutateOrganization();
+
+			if (form.apiKey) {
+				setLocalStorageItem(`${result.id}_api_key`, form.apiKey);
+			}
 			onOpenChange(false);
 		} else if (mode === "edit" && selectedModel) {
 			await fetcher<ModelItem, ModelItem[]>(
@@ -397,6 +385,7 @@ function ModelDialog({
 						description: form.description,
 						baseUrl: form.baseUrl || null,
 					}),
+					cacheKey: "/api/organization/model",
 					toast: {
 						loading: "Saving changes...",
 						success: "Model updated successfully",
@@ -404,9 +393,10 @@ function ModelDialog({
 					},
 				},
 			);
-			if (form.apiKey)
+
+			if (form.apiKey) {
 				setLocalStorageItem(`${selectedModel.id}_api_key`, form.apiKey);
-			await mutateOrganization();
+			}
 			onOpenChange(false);
 		}
 	};

@@ -47,20 +47,17 @@ export function DatabaseSettings() {
 			return;
 		}
 		setIsConnecting(true);
-		await fetcher<GetDatabaseConnectionResult, GetDatabaseConnectionResult>(
-			"/api/organization/database",
-			{
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ connectionString }),
-				mutator: (_, response) => response,
-				toast: {
-					loading: "Connecting...",
-					success: "Connected and saved successfully",
-					error: (e) => e.message || "Failed to connect to database",
-				},
+		await fetcher<GetDatabaseConnectionResult>("/api/organization/database", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ connectionString }),
+			mutator: (_, response) => response,
+			toast: {
+				loading: "Connecting...",
+				success: "Connected and saved successfully",
+				error: (e) => e.message || "Failed to connect to database",
 			},
-		);
+		});
 		setConnectionString("");
 		setLocalTables([]);
 		setIsConnecting(false);

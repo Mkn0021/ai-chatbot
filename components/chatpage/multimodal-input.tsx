@@ -44,7 +44,7 @@ import { PreviewAttachment } from "./message/preview-attachment";
 import { Paperclip, Square as Stop } from "lucide-react";
 import type { ChatModel } from "@/lib/ai/models";
 import { DropdownMenuSeparator } from "../ui/dropdown-menu";
-import { useOrganization } from "./organization-provider";
+import { useApi } from "@/lib/api/client";
 
 function setCookie(name: string, value: string) {
 	const maxAge = 60 * 60 * 24 * 365; // 1 year
@@ -467,27 +467,20 @@ function PureModelSelectorCompact({
 	const [open, setOpen] = useState(false);
 	const [mounted, setMounted] = useState(false);
 
-	const [cachedModels, setCachedModels] = useLocalStorage<ChatModel[]>(
-		"chat-models",
-		[],
-	);
-
-	const { organization, isLoading, error } = useOrganization();
+	const {
+		data: models,
+		isLoading,
+		error,
+	} = useApi<ChatModel[]>("/api/organization/model");
 
 	useEffect(() => {
 		setMounted(true);
 	}, []);
 
-	useEffect(() => {
-		if (organization?.models && organization.models.length > 0) {
-			setCachedModels(organization.models as ChatModel[]);
-		}
-	}, [organization, setCachedModels]);
-
-	const models = (organization?.models || cachedModels) as ChatModel[];
-
 	const modelsByProvider = useMemo(() => {
 		const grouped: Record<string, ChatModel[]> = {};
+
+		if (!models) return grouped;
 
 		for (const model of models) {
 			grouped[model.provider] ??= [];
@@ -505,7 +498,7 @@ function PureModelSelectorCompact({
 		);
 	}
 
-	if (error || models.length === 0) {
+	if (error || !models || models.length === 0) {
 		return (
 			<Button className="h-8 w-[200px]" variant="ghost" disabled>
 				No models available

@@ -72,7 +72,7 @@ export async function fetcher<TResponse, TCache = TResponse>(
 		const data: TResponse = json.data;
 
 		const method = init.method ?? "GET";
-		const key = input.toString();
+		const key = options?.cacheKey ?? input.toString();
 
 		if (method.toUpperCase() !== "GET") {
 			await globalMutate<TCache>(

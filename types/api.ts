@@ -50,5 +50,6 @@ export type FetcherOptions<TResponse, TCache> = RequestInit & {
 		current: TCache | undefined,
 		response: TResponse,
 	) => TCache | undefined;
+	cacheKey?: string;
 	toast?: ToastOptions<TResponse>;
 };

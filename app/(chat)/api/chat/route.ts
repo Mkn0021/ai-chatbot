@@ -30,7 +30,7 @@ import {
 } from "@/app/(chat)/actions";
 import { ChatMessage } from "@/types";
 import { convertToUIMessages, generateUUID } from "@/lib/utils";
-import { getOrganizationById } from "@/app/(organization)/actions";
+import { getOrganizationWithModels } from "@/app/(organization)/actions";
 
 // POST - api/chat
 export async function POST(req: Request) {
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
 			differenceInHours: 24,
 		});
 
-		const organization = await getOrganizationById({
+		const organization = await getOrganizationWithModels({
 			organizationId: session.user.organizationId!,
 		});
 

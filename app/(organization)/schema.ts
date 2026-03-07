@@ -8,7 +8,9 @@ import {
 	databaseConnection,
 } from "@/lib/db/schemas";
 
-const OrgSelectSchema = createSelectSchema(organization);
+const OrgSelectSchema = createSelectSchema(organization).omit({
+	createdAt: true,
+});
 const OrgInsertSchema = createInsertSchema(organization).omit({
 	id: true,
 	createdAt: true,

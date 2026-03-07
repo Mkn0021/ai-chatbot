@@ -2,19 +2,25 @@
 
 import { useState } from "react";
 import { Save } from "lucide-react";
-import { fetcher } from "@/lib/api/client";
+import { fetcher, useApi } from "@/lib/api/client";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { useOrganization } from "@/components/chatpage/organization-provider";
+import type { Organization } from "@/app/(organization)/schema";
 
 export function OrganizationSettings() {
 	const [isUpdating, setIsUpdating] = useState(false);
-	const { organization, isLoading, mutate } = useOrganization();
+	const {
+		data: organization,
+		error,
+		isLoading,
+	} = useApi<Organization>("/api/organization");
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
+
+		if (!organization) return;
 
 		const formData = new FormData(e.currentTarget);
 
@@ -22,6 +28,12 @@ export function OrganizationSettings() {
 			name: String(formData.get("name") ?? ""),
 			dailyMessageLimit: Number(formData.get("dailyMessageLimit") ?? 0),
 		};
+
+		const hasChanges =
+			data.name !== organization.name ||
+			data.dailyMessageLimit !== organization.dailyMessageLimit;
+
+		if (!hasChanges) return;
 
 		setIsUpdating(true);
 		await fetcher("/api/organization", {
@@ -45,7 +57,7 @@ export function OrganizationSettings() {
 		);
 	}
 
-	if (!organization) {
+	if (!organization || error) {
 		return (
 			<div className="flex items-center justify-center py-8">
 				<p className="text-muted-foreground">No organization data available</p>
