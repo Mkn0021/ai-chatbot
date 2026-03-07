@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type APIError from "@/lib/api/error";
 
 export interface SuccessResponse<T> {
 	success: true;
@@ -37,3 +38,17 @@ export type InferValidatedData<T extends ValidationSchema | undefined> =
 				body: T["body"] extends z.ZodSchema ? z.infer<T["body"]> : undefined;
 			}
 		: {};
+
+export type ToastOptions<TResponse> = {
+	loading: string;
+	success: string | ((data: TResponse) => string);
+	error: string | ((error: APIError) => string);
+};
+
+export type FetcherOptions<TResponse, TCache> = RequestInit & {
+	mutator?: (
+		current: TCache | undefined,
+		response: TResponse,
+	) => TCache | undefined;
+	toast?: ToastOptions<TResponse>;
+};

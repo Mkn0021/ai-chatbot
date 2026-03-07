@@ -1,6 +1,6 @@
 "use client";
 
-import useSWR, { type KeyedMutator } from "swr";
+import { type KeyedMutator } from "swr";
 import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -41,7 +41,6 @@ import { Badge } from "@/components/ui/badge";
 import { DEFAULT_MODELS } from "@/lib/ai/models";
 import { PasswordInput } from "@/components/ui/password-input";
 import {
-	fetcher,
 	getLocalStorageItem,
 	removeLocalStorageItem,
 	setLocalStorageItem,
@@ -49,6 +48,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useOrganization } from "@/components/chatpage/organization-provider";
 import type { GetOrganizationByIdResult } from "@/app/(organization)/schema";
+import { fetcher, useApi } from "@/lib/api/client";
 
 type ModelStatus = "active" | "inactive" | "error";
 
@@ -69,7 +69,7 @@ export function ChatModelsSettings() {
 		error,
 		isLoading,
 		mutate,
-	} = useSWR<ModelItem[]>("/api/organization/model", fetcher);
+	} = useApi<ModelItem[]>("/api/organization/model");
 
 	const { mutate: mutateOrganization } = useOrganization();
 
@@ -109,7 +109,6 @@ export function ChatModelsSettings() {
 				open={addDialogOpen}
 				onOpenChange={setAddDialogOpen}
 				mode="add"
-				mutate={mutate}
 				mutateOrganization={mutateOrganization}
 			/>
 
@@ -118,7 +117,6 @@ export function ChatModelsSettings() {
 				onOpenChange={setEditDialogOpen}
 				mode="edit"
 				selectedModel={selectedModel}
-				mutate={mutate}
 				mutateOrganization={mutateOrganization}
 			/>
 
@@ -133,7 +131,6 @@ export function ChatModelsSettings() {
 						setSelectedModel(model);
 						setEditDialogOpen(true);
 					}}
-					mutate={mutate}
 					mutateOrganization={mutateOrganization}
 				/>
 			)}
@@ -144,28 +141,27 @@ export function ChatModelsSettings() {
 interface ChatModelsTableProps {
 	models: ModelItem[];
 	onEdit: (model: ModelItem) => void;
-	mutate: KeyedMutator<ModelItem[]>;
 	mutateOrganization: KeyedMutator<GetOrganizationByIdResult>;
 }
 
 const ChatModelsTable = ({
 	models,
 	onEdit,
-	mutate,
 	mutateOrganization,
 }: ChatModelsTableProps) => {
 	const handleDeleteModel = async (modelId: string) => {
-		try {
-			await fetcher(`/api/organization/model?id=${modelId}`, {
-				method: "DELETE",
-			});
-			removeLocalStorageItem(`${modelId}_api_key`);
-			await mutate();
-			await mutateOrganization();
-			toast.success("Model deleted successfully");
-		} catch (error: any) {
-			toast.error(error.message || "Failed to delete model");
-		}
+		removeLocalStorageItem(`${modelId}_api_key`);
+		await fetcher(`/api/organization/model?id=${modelId}`, {
+			method: "DELETE",
+			mutator: (current: ModelItem[] | undefined) =>
+				(current ?? []).filter((m) => m.id !== modelId),
+			toast: {
+				loading: "Deleting model...",
+				success: "Model deleted successfully",
+				error: (e) => e.message || "Failed to delete model",
+			},
+		});
+		await mutateOrganization();
 	};
 
 	const copyToClipboard = async (modelId: string) => {
@@ -321,7 +317,6 @@ interface ModelDialogProps {
 	onOpenChange: (open: boolean) => void;
 	mode: "add" | "edit";
 	selectedModel?: ModelItem | null;
-	mutate: KeyedMutator<ModelItem[]>;
 	mutateOrganization: KeyedMutator<GetOrganizationByIdResult>;
 }
 
@@ -330,7 +325,6 @@ function ModelDialog({
 	onOpenChange,
 	mode,
 	selectedModel,
-	mutate,
 	mutateOrganization,
 }: ModelDialogProps) {
 	const [form, setForm] = useState({
@@ -367,8 +361,9 @@ function ModelDialog({
 
 	const handleSubmit = async () => {
 		if (mode === "add") {
-			try {
-				const result = await fetcher<ModelItem>("/api/organization/model", {
+			const result = await fetcher<ModelItem, ModelItem[]>(
+				"/api/organization/model",
+				{
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
@@ -379,42 +374,40 @@ function ModelDialog({
 						baseUrl: form.baseUrl || null,
 						status: "active",
 					}),
-				});
-				if (form.apiKey) {
-					setLocalStorageItem(`${result.id}_api_key`, form.apiKey);
-				}
-				mutate();
-				await mutateOrganization();
-				onOpenChange(false);
-				toast.success("Model added successfully");
-			} catch (error: any) {
-				toast.error(error.message || "Failed to add model");
-			}
-		} else if (mode === "edit" && selectedModel) {
-			try {
-				await fetcher<ModelItem>(
-					`/api/organization/model?id=${selectedModel.id}`,
-					{
-						method: "PUT",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({
-							name: form.name,
-							provider: form.provider,
-							description: form.description,
-							baseUrl: form.baseUrl || null,
-						}),
+					mutator: (current, response) => [...(current ?? []), response],
+					toast: {
+						loading: "Adding model...",
+						success: "Model added successfully",
+						error: (e) => e.message || "Failed to add model",
 					},
-				);
-				if (form.apiKey) {
-					setLocalStorageItem(`${selectedModel.id}_api_key`, form.apiKey);
-				}
-				mutate();
-				await mutateOrganization();
-				onOpenChange(false);
-				toast.success("Model updated successfully");
-			} catch (error: any) {
-				toast.error(error.message || "Failed to update model");
-			}
+				},
+			);
+			if (form.apiKey) setLocalStorageItem(`${result.id}_api_key`, form.apiKey);
+			await mutateOrganization();
+			onOpenChange(false);
+		} else if (mode === "edit" && selectedModel) {
+			await fetcher<ModelItem, ModelItem[]>(
+				`/api/organization/model?id=${selectedModel.id}`,
+				{
+					method: "PUT",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						name: form.name,
+						provider: form.provider,
+						description: form.description,
+						baseUrl: form.baseUrl || null,
+					}),
+					toast: {
+						loading: "Saving changes...",
+						success: "Model updated successfully",
+						error: (e) => e.message || "Failed to update model",
+					},
+				},
+			);
+			if (form.apiKey)
+				setLocalStorageItem(`${selectedModel.id}_api_key`, form.apiKey);
+			await mutateOrganization();
+			onOpenChange(false);
 		}
 	};
 

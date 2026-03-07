@@ -1,6 +1,5 @@
 "use client";
 
-import useSWR from "swr";
 import { toast } from "sonner";
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
@@ -27,73 +26,62 @@ import type {
 	DatabaseTable,
 	GetDatabaseConnectionResult,
 } from "@/app/(organization)/schema";
-import { fetcher } from "@/lib/utils";
+import { fetcher, useApi } from "@/lib/api/client";
 
 export function DatabaseSettings() {
 	const [connectionString, setConnectionString] = useState("");
 	const [isConnecting, setIsConnecting] = useState(false);
 	const [localTables, setLocalTables] = useState<DatabaseTable[]>([]);
 
-	const {
-		data: connectionData,
-		mutate,
-		isLoading,
-	} = useSWR<GetDatabaseConnectionResult | null>(
-		"/api/organization/database",
-		fetcher,
-	);
+	const { data: connectionData, isLoading } =
+		useApi<GetDatabaseConnectionResult | null>("/api/organization/database");
 
 	const isConnected = !!connectionData;
 	const savedTables = connectionData?.tables || [];
 	const displayTables = localTables.length > 0 ? localTables : savedTables;
+	const hasChanges = localTables.length > 0;
 
 	const handleConnect = async () => {
 		if (!connectionString) {
 			toast.error("Please enter a connection string");
 			return;
 		}
-
 		setIsConnecting(true);
-
-		try {
-			const result = await fetcher<GetDatabaseConnectionResult>(
-				"/api/organization/database",
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({ connectionString }),
+		await fetcher<GetDatabaseConnectionResult, GetDatabaseConnectionResult>(
+			"/api/organization/database",
+			{
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ connectionString }),
+				mutator: (_, response) => response,
+				toast: {
+					loading: "Connecting...",
+					success: "Connected and saved successfully",
+					error: (e) => e.message || "Failed to connect to database",
 				},
-			);
-
-			mutate(result);
-			setConnectionString("");
-			setLocalTables([]);
-			toast.success("Connected and saved successfully");
-		} catch (error: any) {
-			toast.error(error.message || "Failed to connect to database");
-		} finally {
-			setIsConnecting(false);
-		}
+			},
+		);
+		setConnectionString("");
+		setLocalTables([]);
+		setIsConnecting(false);
 	};
 
 	const handleDisconnect = async () => {
 		setIsConnecting(true);
-
-		try {
-			await fetcher("/api/organization/database", {
+		await fetcher<null, GetDatabaseConnectionResult | null>(
+			"/api/organization/database",
+			{
 				method: "DELETE",
-			});
-
-			mutate(null);
-			setLocalTables([]);
-			toast.success("Database disconnected successfully");
-		} catch (error: any) {
-			toast.error(error.message || "Failed to disconnect database");
-		} finally {
-			setIsConnecting(false);
-		}
+				mutator: () => null,
+				toast: {
+					loading: "Disconnecting...",
+					success: "Database disconnected successfully",
+					error: (e) => e.message || "Failed to disconnect database",
+				},
+			},
+		);
+		setLocalTables([]);
+		setIsConnecting(false);
 	};
 
 	const handleToggleAccess = (table: DatabaseTable) => {
@@ -110,27 +98,19 @@ export function DatabaseSettings() {
 			.filter((t) => t.isSelected)
 			.map((t) => `${t.table_schema}.${t.table_name}`);
 
-		try {
-			const result = await fetcher<GetDatabaseConnectionResult>(
-				"/api/organization/database",
-				{
-					method: "PUT",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({ selectedTables }),
-				},
-			);
-
-			mutate(result);
-			setLocalTables([]);
-			toast.success("Table selection saved");
-		} catch (error: any) {
-			toast.error(error.message || "Failed to save selection");
-		}
+		await fetcher<GetDatabaseConnectionResult>("/api/organization/database", {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ selectedTables }),
+			mutator: (_, response) => response,
+			toast: {
+				loading: "Saving...",
+				success: "Table selection saved",
+				error: (e) => e.message || "Failed to save selection",
+			},
+		});
+		setLocalTables([]);
 	};
-
-	const hasChanges = localTables.length > 0;
 
 	return (
 		<div>

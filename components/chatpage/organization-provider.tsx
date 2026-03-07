@@ -1,7 +1,7 @@
 "use client";
 
-import useSWR, { type KeyedMutator } from "swr";
-import { fetcher } from "@/lib/utils";
+import { useApi } from "@/lib/api/client";
+import { type KeyedMutator } from "swr";
 import { createContext, useContext, type ReactNode } from "react";
 import type { GetOrganizationByIdResult } from "@/app/(organization)/schema";
 
@@ -22,7 +22,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 		error,
 		isLoading,
 		mutate,
-	} = useSWR<GetOrganizationByIdResult>("/api/organization", fetcher);
+	} = useApi<GetOrganizationByIdResult>("/api/organization");
 
 	return (
 		<OrganizationContext.Provider

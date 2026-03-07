@@ -7,7 +7,7 @@ import { useCopyToClipboard } from "usehooks-ts";
 import type { Vote } from "@/lib/db/schemas/ai-chat";
 import { Copy, Edit, ThumbsDown, ThumbsUp } from "lucide-react";
 import { Action, Actions } from "@/components/ai-element/actions";
-import { fetcher } from "@/lib/utils";
+import { fetcher } from "@/lib/api/client";
 
 export function PureMessageActions({
 	chatId,
@@ -45,6 +45,27 @@ export function PureMessageActions({
 		toast.success("Copied to clipboard!");
 	};
 
+	const handleVote = async (isUpvoted: boolean) => {
+		await fetcher<Vote, Vote[]>("/api/vote", {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ chatId, messageId: message.id, isUpvoted }),
+			mutator: (current) => {
+				const without = (current ?? []).filter(
+					(v) => v.messageId !== message.id,
+				);
+				return [...without, { chatId, messageId: message.id, isUpvoted }];
+			},
+			toast: {
+				loading: isUpvoted ? "Upvoting Response..." : "Downvoting Response...",
+				success: isUpvoted ? "Upvoted Response!" : "Downvoted Response!",
+				error: isUpvoted
+					? "Failed to upvote response."
+					: "Failed to downvote response.",
+			},
+		});
+	};
+
 	// User messages get edit (on hover) and copy actions
 	if (message.role === "user") {
 		return (
@@ -77,47 +98,7 @@ export function PureMessageActions({
 			<Action
 				data-testid="message-upvote"
 				disabled={vote?.isUpvoted}
-				onClick={() => {
-					const upvote = fetcher("/api/vote", {
-						method: "PATCH",
-						body: JSON.stringify({
-							chatId,
-							messageId: message.id,
-							isUpvoted: true,
-						}),
-					});
-
-					toast.promise(upvote, {
-						loading: "Upvoting Response...",
-						success: () => {
-							mutate<Vote[]>(
-								`/api/vote?chatId=${chatId}`,
-								(currentVotes) => {
-									if (!currentVotes) {
-										return [];
-									}
-
-									const votesWithoutCurrent = currentVotes.filter(
-										(currentVote) => currentVote.messageId !== message.id,
-									);
-
-									return [
-										...votesWithoutCurrent,
-										{
-											chatId,
-											messageId: message.id,
-											isUpvoted: true,
-										},
-									];
-								},
-								{ revalidate: false },
-							);
-
-							return "Upvoted Response!";
-						},
-						error: "Failed to upvote response.",
-					});
-				}}
+				onClick={() => handleVote(true)}
 				tooltip="Upvote Response"
 			>
 				<ThumbsUp />
@@ -126,47 +107,7 @@ export function PureMessageActions({
 			<Action
 				data-testid="message-downvote"
 				disabled={vote && !vote.isUpvoted}
-				onClick={() => {
-					const downvote = fetcher("/api/vote", {
-						method: "PATCH",
-						body: JSON.stringify({
-							chatId,
-							messageId: message.id,
-							isUpvoted: false,
-						}),
-					});
-
-					toast.promise(downvote, {
-						loading: "Downvoting Response...",
-						success: () => {
-							mutate<Vote[]>(
-								`/api/vote?chatId=${chatId}`,
-								(currentVotes) => {
-									if (!currentVotes) {
-										return [];
-									}
-
-									const votesWithoutCurrent = currentVotes.filter(
-										(currentVote) => currentVote.messageId !== message.id,
-									);
-
-									return [
-										...votesWithoutCurrent,
-										{
-											chatId,
-											messageId: message.id,
-											isUpvoted: false,
-										},
-									];
-								},
-								{ revalidate: false },
-							);
-
-							return "Downvoted Response!";
-						},
-						error: "Failed to downvote response.",
-					});
-				}}
+				onClick={() => handleVote(false)}
 				tooltip="Downvote Response"
 			>
 				<ThumbsDown />

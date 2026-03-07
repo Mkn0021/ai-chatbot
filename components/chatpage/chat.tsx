@@ -3,7 +3,7 @@
 import { toast } from "sonner";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import useSWR, { useSWRConfig } from "swr";
+import { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDataStream } from "./data-stream-provider";
@@ -19,12 +19,9 @@ import { ChatHeader } from "./chat-header";
 import { Messages } from "./message/messages";
 import { MultimodalInput } from "./multimodal-input";
 import { getChatHistoryPaginationKey } from "./sidebar/sidebar-history";
-import {
-	fetcher,
-	fetchWithErrorHandlers,
-	generateUUID,
-	getLocalStorageItem,
-} from "@/lib/utils";
+import { generateUUID, getLocalStorageItem } from "@/lib/utils";
+import APIError from "@/lib/api/error";
+import { useApi } from "@/lib/api/client";
 
 export function Chat({
 	id,
@@ -67,6 +64,30 @@ export function Chat({
 	useEffect(() => {
 		currentModelIdRef.current = currentModelId;
 	}, [currentModelId]);
+
+	async function fetchWithErrorHandlers(
+		input: RequestInfo | URL,
+		init?: RequestInit,
+	) {
+		try {
+			const response = await fetch(input, init);
+
+			if (!response.ok) {
+				const body = await response.json();
+				throw new APIError(body.error ?? body.cause, response.status, {
+					code: body.code,
+				});
+			}
+
+			return response;
+		} catch (error: unknown) {
+			if (typeof navigator !== "undefined" && !navigator.onLine) {
+				throw new APIError("You appear to be offline", 0);
+			}
+
+			throw error;
+		}
+	}
 
 	const {
 		messages,
@@ -175,9 +196,8 @@ export function Chat({
 		}
 	}, [query, sendMessage, hasAppendedQuery, id]);
 
-	const { data: votes } = useSWR<Vote[]>(
+	const { data: votes } = useApi<Vote[]>(
 		messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
-		fetcher,
 	);
 
 	const [attachments, setAttachments] = useState<Attachment[]>([]);

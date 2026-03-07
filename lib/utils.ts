@@ -10,48 +10,6 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
-export const fetcher = async <T>(
-	input: RequestInfo | URL,
-	init?: RequestInit,
-): Promise<T> => {
-	const response = await fetch(input, init);
-
-	if (!response.ok) {
-		const body = await response.json();
-		throw new APIError(body.error ?? body.cause, response.status, {
-			code: body.code,
-		});
-	}
-
-	// AsyncHandler by Default return data : { data: T , message: string }
-	const json = await response.json();
-	return json.data;
-};
-
-export async function fetchWithErrorHandlers(
-	input: RequestInfo | URL,
-	init?: RequestInit,
-) {
-	try {
-		const response = await fetch(input, init);
-
-		if (!response.ok) {
-			const body = await response.json();
-			throw new APIError(body.error ?? body.cause, response.status, {
-				code: body.code,
-			});
-		}
-
-		return response;
-	} catch (error: unknown) {
-		if (typeof navigator !== "undefined" && !navigator.onLine) {
-			throw new APIError("You appear to be offline", 0);
-		}
-
-		throw error;
-	}
-}
-
 export function generateUUID(): string {
 	return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
 		const r = (Math.random() * 16) | 0;

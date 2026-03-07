@@ -3,12 +3,15 @@
 import { useMemo } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
-import { fetcher } from "@/lib/utils";
+import { fetcher } from "@/lib/api/client";
 import {
 	type ChatHistory,
 	getChatHistoryPaginationKey,
 } from "@/components/chatpage/sidebar/sidebar-history";
-import type { VisibilityType } from "@/app/(chat)/schema";
+import type {
+	UpdateChatVisibilityInput,
+	VisibilityType,
+} from "@/app/(chat)/schema";
 
 export function useChatVisibility({
 	chatId,
@@ -43,7 +46,7 @@ export function useChatVisibility({
 		setLocalVisibility(updatedVisibilityType);
 		mutate(unstable_serialize(getChatHistoryPaginationKey));
 
-		await fetcher("/api/chat/visibility", {
+		await fetcher<UpdateChatVisibilityInput>("/api/chat/visibility", {
 			method: "PATCH",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({

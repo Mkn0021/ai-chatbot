@@ -1,9 +1,8 @@
 "use client";
 
-import { toast } from "sonner";
 import { useState } from "react";
 import { Save } from "lucide-react";
-import { fetcher } from "@/lib/utils";
+import { fetcher } from "@/lib/api/client";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,27 +24,17 @@ export function OrganizationSettings() {
 		};
 
 		setIsUpdating(true);
-
-		try {
-			await fetcher("/api/organization", {
-				method: "PUT",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(data),
-			});
-
-			mutate();
-			toast.success("Organization updated successfully");
-		} catch (error) {
-			toast.error(
-				error instanceof Error
-					? error.message
-					: "Failed to update organization",
-			);
-		} finally {
-			setIsUpdating(false);
-		}
+		await fetcher("/api/organization", {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(data),
+			toast: {
+				loading: "Updating organization...",
+				success: "Organization updated successfully",
+				error: (e) => e.message || "Failed to update organization",
+			},
+		});
+		setIsUpdating(false);
 	};
 
 	if (isLoading) {

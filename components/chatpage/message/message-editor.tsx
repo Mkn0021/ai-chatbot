@@ -10,9 +10,10 @@ import {
 	useState,
 } from "react";
 import type { ChatMessage } from "@/types";
-import { fetcher, getTextFromMessage } from "@/lib/utils";
+import { getTextFromMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { fetcher } from "@/lib/api/client";
 
 export type MessageEditorProps = {
 	message: ChatMessage;
@@ -57,6 +58,12 @@ export function MessageEditor({
 
 		await fetcher(`/api/chat/message/trailing?id=${message.id}`, {
 			method: "DELETE",
+			mutator: () => undefined,
+			toast: {
+				loading: "Sending...",
+				success: "Sent!",
+				error: "Failed to send.",
+			},
 		});
 
 		setMessages((messages) => {

@@ -22,7 +22,7 @@ import {
 	SidebarMenu,
 	useSidebar,
 } from "@/components/ui/sidebar";
-import { fetcher } from "@/lib/utils";
+import { fetcher } from "@/lib/api/client";
 import type { Chat } from "@/lib/db/schemas";
 import type { User } from "better-auth";
 import { ChatItem } from "./sidebar-history-item";
