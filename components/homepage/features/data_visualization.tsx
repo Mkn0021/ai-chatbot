@@ -5,14 +5,15 @@ export function DataVisualization() {
 	return (
 		<Terminal>
 			<Graph />
-			<NameIndicator
-				name="Users Table"
-				position="top-10 -left-10"
-				variant="bottom"
-			/>
-			<NameIndicator name="Orders Table" position="top-0 -right-20" />
-			<div className="absolute -right-10 -bottom-4 -left-10 flex items-center justify-between gap-4 rounded-full border border-neutral-200 bg-white p-1">
-				<div />
+			<PointIndicator className="top-4 -left-16">
+				Users Table
+				<ArrowIcon className="top-5 -right-6 scale-y-[-1]" />
+			</PointIndicator>
+			<PointIndicator className="-top-10 -right-10">
+				Orders Table
+				<ArrowIcon className="top-9 right-18 scale-y-[-1]" />
+			</PointIndicator>
+			<div className="absolute -right-10 -bottom-4 -left-10 flex items-center justify-end gap-4 rounded-full border border-neutral-200 bg-white p-1">
 				<button className="cursor-pointer rounded-[37px] bg-[linear-gradient(181deg,#5E5E5E_18.12%,#000_99.57%)] px-6 py-2 text-right text-white shadow-[0px_1px_1px_2px_rgba(255,255,255,0.40)_inset,0px_-1px_5px_2px_rgba(255,255,255,0.40)_inset,0px_10px_20px_0px_rgba(0,0,0,0.10),0px_3px_6px_0px_rgba(0,0,0,0.05),0px_4px_8px_0px_rgba(3,7,18,0.06),0px_2px_4px_0px_rgba(3,7,18,0.06),0px_0px_0px_1px_rgba(3,7,18,0.08)]">
 					Export
 				</button>
@@ -21,27 +22,18 @@ export function DataVisualization() {
 	);
 }
 
-export function NameIndicator({
-	position,
-	name,
-	variant = "top",
+export function PointIndicator({
+	className,
+	children,
 }: {
-	name: string;
-	position: string;
-	variant?: "top" | "bottom";
+	className?: string;
+	children?: React.ReactNode;
 }) {
 	return (
-		<div className={cn("absolute transform-none opacity-100", position)}>
+		<div className={cn("absolute transform-none opacity-100", className)}>
 			<div className="flex items-center gap-2">
 				<div className="flex cursor-none items-center gap-2 rounded-lg border border-white/40 bg-[#103685] px-4 py-1.5 text-sm text-white mix-blend-luminosity shadow-[0px_0px_8px_0px_rgba(248,248,248,0.25)_inset,0px_32px_24px_-16px_rgba(0,0,0,0.40)] backdrop-blur-[6px] transition-opacity hover:opacity-90">
-					{name}
-					<ArrowIcon
-						className={cn(
-							variant == "top"
-								? "-top-4 -left-4 scale-x-[-1]"
-								: "-top-4 -right-4",
-						)}
-					/>
+					{children}
 				</div>
 			</div>
 		</div>
@@ -74,7 +66,7 @@ export function Graph() {
 	return (
 		<div className="absolute top-0 right-0 bottom-16 left-0 flex h-47.5 items-end justify-between gap-4">
 			<GraphBar className="h-[30%]" />
-			<GraphBar className="h-[70%]" />
+			<GraphBar className="h-[70%]" variant="primary" />
 			<GraphBar className="h-[40%]" />
 			<GraphBar className="h-[80%]" />
 			<GraphBar className="h-[50%]" />

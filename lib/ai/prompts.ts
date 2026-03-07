@@ -1,6 +1,4 @@
-import { getLocalStorageItem } from "../utils";
 import type { DatabaseTable } from "@/app/(organization)/schema";
-import { getDatabaseConnection } from "@/app/(organization)/actions";
 
 export const SQL_QUERY_DESCRIPTION =
 	"Execute SQL queries against a connected database and create visualizations. Choose from: 'none' (no visualization), 'area_chart' (time-series with multiple metrics), 'bar_chart' (comparing multiple categories/metrics), 'line_chart' (trends over time), 'pie_chart' (part-to-whole relationships), 'radial_chart' (circular comparison), 'bar_chart_label' (simple category-value pairs with labels). Provide title, optional description, and optional footer (only for pie_chart, radial_chart, bar_chart_label). Trends are automatically calculated.";

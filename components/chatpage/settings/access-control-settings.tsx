@@ -10,7 +10,6 @@ import {
 	DialogDescription,
 	DialogHeader,
 	DialogTitle,
-	DialogTrigger,
 } from "@/components/ui/dialog";
 import {
 	Table,
@@ -287,7 +286,7 @@ const PermissionsMap = ({
 										onChange={() => togglePermission(permission.id)}
 										className="peer sr-only"
 									/>
-									<div className="peer peer-checked:bg-sidebar-primary h-6 w-11 rounded-full bg-gray-200 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white rtl:peer-checked:after:-translate-x-full dark:border-gray-600 dark:bg-gray-700 dark:peer-focus:ring-blue-800"></div>
+									<div className="peer peer-checked:bg-sidebar-primary h-6 w-11 rounded-full bg-gray-200 peer-focus:outline-none after:absolute after:inset-s-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white rtl:peer-checked:after:-translate-x-full dark:border-gray-600 dark:bg-gray-700 dark:peer-focus:ring-blue-800"></div>
 								</label>
 							</div>
 						);

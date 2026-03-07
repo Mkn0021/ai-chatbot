@@ -48,6 +48,7 @@ export const Footer = () => {
 					/>
 				</div>
 			</div>
+			<MadeWithLove />
 		</footer>
 	);
 };

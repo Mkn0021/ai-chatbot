@@ -11,13 +11,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import {
-	MoreHorizontal,
-	MoreVertical,
-	Pencil,
-	Trash,
-	UserPlus,
-} from "lucide-react";
+import { MoreVertical, Pencil, Trash, UserPlus } from "lucide-react";
 import {
 	Dialog,
 	DialogContent,
@@ -208,14 +202,6 @@ const TeamMembersTable = ({
 	const handleDelete = (id: string) => {
 		setMembers((prev) => prev.filter((m) => m.id !== id));
 		toast.success("Member removed");
-	};
-
-	const handleStatusChange = (
-		id: string,
-		status: "active" | "inactive" | "pending",
-	) => {
-		setMembers((prev) => prev.map((m) => (m.id === id ? { ...m, status } : m)));
-		toast.success("Status updated");
 	};
 
 	return (

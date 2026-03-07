@@ -9,8 +9,12 @@ export const HeroSection = () => {
 			<div className="absolute inset-y-0 left-1/2 -z-10 w-screen max-w-[76rem] -translate-x-1/2 rounded-b-3xl bg-linear-to-t from-[rgba(247,135,67,1)] via-[rgba(255,244,239,1)] to-white" />
 			<h1 className="relative z-20 mx-auto mb-4 max-w-6xl text-center text-4xl font-semibold tracking-tight text-balance text-gray-700 md:text-7xl">
 				<span className="inline-block align-top leading-[0.5] text-balance decoration-inherit md:leading-[0.8]">
-					<HeroHeading title="Build " cta_title="Personalized AI" />
-					<HeroHeading title="with Your Own " cta_title="Data" />
+					<Heading>
+						Build <HeadingAccent>Personalized AI</HeadingAccent>
+					</Heading>
+					<Heading>
+						with Your Own <HeadingAccent>Data</HeadingAccent>
+					</Heading>
 				</span>
 			</h1>
 			<SubHeading>
@@ -42,38 +46,43 @@ export const SubHeading = ({ children }: { children: React.ReactNode }) => {
 	);
 };
 
-export const HeroHeading = ({
-	title,
-	cta_title,
-	className,
+const Heading = ({
+	children,
 	as = "h1",
+	className,
 }: {
-	title: string;
-	cta_title?: string;
+	children: React.ReactNode;
+	as?: "h1" | "h2" | "span";
 	className?: string;
-	as?: "h1" | "h2";
 }) => {
 	const Tag = as;
-	const baseClass =
-		"inline-block bg-linear-to-b bg-clip-text text-transparent opacity-100 py-2";
 	return (
 		<Tag
 			className={cn(
+				"inline-block bg-linear-to-b bg-clip-text py-2 text-transparent opacity-100",
 				"from-[rgba(94,94,94,1)] to-[rgba(0,0,0,1)]",
-				baseClass,
 				className,
 			)}
 		>
-			{title}
-			<span
-				className={cn(
-					"from-[rgba(255,167,86,1)] to-[rgba(238,96,44,1)]",
-					baseClass,
-					className,
-				)}
-			>
-				{cta_title}
-			</span>
+			{children}
 		</Tag>
 	);
 };
+
+const HeadingAccent = ({
+	children,
+	className,
+}: {
+	children: React.ReactNode;
+	className?: string;
+}) => (
+	<Heading
+		as="span"
+		className={cn(
+			"from-[rgba(255,167,86,1)] to-[rgba(238,96,44,1)]",
+			className,
+		)}
+	>
+		{children}
+	</Heading>
+);

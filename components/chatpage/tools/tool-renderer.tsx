@@ -5,7 +5,6 @@ import {
 	ToolContent,
 	ToolHeader,
 	ToolInput,
-	ToolOutput,
 } from "@/components/ai-element/tool";
 import type { UseChatHelpers } from "@ai-sdk/react";
 import type { ChatMessage } from "@/types";
