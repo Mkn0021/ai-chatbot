@@ -14,6 +14,7 @@ import { user } from "./auth";
 export const chat = pgTable("Chat", {
 	id: text("id").primaryKey().notNull(),
 	createdAt: timestamp("createdAt").notNull(),
+	updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 	title: text("title").notNull(),
 	userId: text("userId")
 		.notNull()
@@ -48,12 +49,9 @@ export const vote = pgTable(
 			.notNull()
 			.references(() => message.id),
 		isUpvoted: boolean("isUpvoted").notNull(),
+		updatedAt: timestamp("updatedAt").notNull().defaultNow().notNull(),
 	},
-	(table) => {
-		return {
-			pk: primaryKey({ columns: [table.chatId, table.messageId] }),
-		};
-	},
+	(table) => [primaryKey({ columns: [table.chatId, table.messageId] })],
 );
 
 export type Vote = InferSelectModel<typeof vote>;
@@ -71,12 +69,9 @@ export const document = pgTable(
 		userId: text("userId")
 			.notNull()
 			.references(() => user.id),
+		updatedAt: timestamp("updatedAt").notNull().defaultNow().notNull(),
 	},
-	(table) => {
-		return {
-			pk: primaryKey({ columns: [table.id, table.createdAt] }),
-		};
-	},
+	(table) => [primaryKey({ columns: [table.id, table.createdAt] })],
 );
 
 export type Document = InferSelectModel<typeof document>;
@@ -95,14 +90,15 @@ export const suggestion = pgTable(
 			.notNull()
 			.references(() => user.id),
 		createdAt: timestamp("createdAt").notNull(),
+		updatedAt: timestamp("updatedAt").notNull().defaultNow().notNull(),
 	},
-	(table) => ({
-		pk: primaryKey({ columns: [table.id] }),
-		documentRef: foreignKey({
+	(table) => [
+		primaryKey({ columns: [table.id] }),
+		foreignKey({
 			columns: [table.documentId, table.documentCreatedAt],
 			foreignColumns: [document.id, document.createdAt],
 		}),
-	}),
+	],
 );
 
 export type Suggestion = InferSelectModel<typeof suggestion>;
@@ -114,13 +110,13 @@ export const stream = pgTable(
 		chatId: text("chatId").notNull(),
 		createdAt: timestamp("createdAt").notNull(),
 	},
-	(table) => ({
-		pk: primaryKey({ columns: [table.id] }),
-		chatRef: foreignKey({
+	(table) => [
+		primaryKey({ columns: [table.id] }),
+		foreignKey({
 			columns: [table.chatId],
 			foreignColumns: [chat.id],
 		}),
-	}),
+	],
 );
 
 export type Stream = InferSelectModel<typeof stream>;

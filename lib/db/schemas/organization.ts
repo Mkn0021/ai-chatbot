@@ -13,6 +13,7 @@ export const organization = pgTable("organizations", {
 	name: text("name").notNull(),
 	dailyMessageLimit: integer("daily_message_limit").default(1000).notNull(),
 	createdAt: timestamp("created_at").defaultNow(),
+	updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const organizationModel = pgTable("organization_models", {
@@ -29,7 +30,7 @@ export const organizationModel = pgTable("organization_models", {
 	baseUrl: text("base_url"),
 	status: text("status").default("active"),
 	createdAt: timestamp("created_at").defaultNow(),
-	updatedAt: timestamp("updated_at").defaultNow(),
+	updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const databaseConnection = pgTable("database_connections", {
@@ -46,7 +47,7 @@ export const databaseConnection = pgTable("database_connections", {
 	databaseContext: text("database_context"),
 	isActive: boolean("is_active").default(true),
 	createdAt: timestamp("created_at").defaultNow(),
-	updatedAt: timestamp("updated_at").defaultNow(),
+	updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const organizationRelations = relations(
