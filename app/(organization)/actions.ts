@@ -3,8 +3,8 @@ import "server-only";
 import db from "@/lib/db";
 import { User } from "better-auth";
 import APIError from "@/lib/api/error";
-import { generateUUID } from "@/lib/utils";
-import { eq } from "drizzle-orm/sql/expressions/conditions";
+import { generateUUID, generateEtag } from "@/lib/utils";
+import { eq, max } from "drizzle-orm";
 import {
 	organization,
 	organizationModel,
@@ -18,8 +18,6 @@ import {
 	ConnectDatabaseInput,
 	DatabaseTable,
 	UpdateTableSelectionInput,
-	DatabaseTablesResult,
-	GetDatabaseConnectionResult,
 	GetOrganizationByIdResult,
 } from "./schema";
 import { Pool } from "pg";
@@ -72,7 +70,12 @@ export async function getOrganizationById({
 		throw APIError.notFound("Organization not found");
 	}
 
-	return org;
+	const { updatedAt, ...orgData } = org;
+
+	return {
+		data: orgData,
+		etag: generateEtag(updatedAt),
+	};
 }
 
 export async function getOrganizationWithModels({
@@ -123,21 +126,36 @@ export async function updateOrganization(
 ) {
 	const [updatedOrg] = await db
 		.update(organization)
-		.set({ ...data })
+		.set({ ...data, updatedAt: new Date() })
 		.where(eq(organization.id, organizationId))
 		.returning();
 
 	if (!updatedOrg) throw APIError.notFound("Organization not found");
 
-	return updatedOrg;
+	return {
+		data: updatedOrg,
+		etag: generateEtag(updatedOrg.updatedAt),
+	};
 }
 
 export async function getOrganizationModels(organizationId: string) {
-	const models = await db.query.organizationModel.findMany({
-		where: eq(organizationModel.organizationId, organizationId),
-	});
+	const [models, maxResult] = await Promise.all([
+		db.query.organizationModel.findMany({
+			where: eq(organizationModel.organizationId, organizationId),
+		}),
+		db
+			.select({ latestUpdatedAt: max(organizationModel.updatedAt) })
+			.from(organizationModel)
+			.where(eq(organizationModel.organizationId, organizationId))
+			.then((result) => result[0]),
+	]);
 
-	return models;
+	const maxUpdatedAt = maxResult?.latestUpdatedAt || new Date();
+
+	return {
+		data: models,
+		etag: generateEtag(maxUpdatedAt),
+	};
 }
 
 export async function createOrganizationModel(
@@ -163,12 +181,18 @@ export async function createOrganizationModel(
 		.values({
 			...data,
 			organizationId,
+			updatedAt: new Date(),
 		})
 		.returning();
 
 	if (!model) throw APIError.internal("Failed to create model");
 
-	return model;
+	const { updatedAt, ...modelData } = model;
+
+	return {
+		data: modelData,
+		etag: generateEtag(updatedAt),
+	};
 }
 
 export async function updateOrganizationModel(
@@ -194,7 +218,10 @@ export async function updateOrganizationModel(
 
 	if (!updatedModel) throw APIError.internal("Failed to update model");
 
-	return updatedModel;
+	return {
+		data: updatedModel,
+		etag: generateEtag(updatedModel.updatedAt),
+	};
 }
 
 export async function deleteOrganizationModel(
@@ -218,13 +245,18 @@ export async function deleteOrganizationModel(
 
 	if (!deletedModel) throw APIError.internal("Failed to delete model");
 
-	return deletedModel;
+	const { updatedAt, ...modelData } = deletedModel;
+
+	return {
+		data: modelData,
+		etag: generateEtag(updatedAt),
+	};
 }
 
 export async function getDatabaseTables(
 	organizationId: string,
 	data: ConnectDatabaseInput,
-): Promise<DatabaseTablesResult> {
+) {
 	const { connectionString, name } = data;
 	let pool: Pool | null = null;
 
@@ -274,6 +306,7 @@ export async function getDatabaseTables(
 				tablesData: tablesData,
 				selectedTables: [],
 				isActive: true,
+				updatedAt: new Date(),
 			})
 			.returning();
 
@@ -282,27 +315,29 @@ export async function getDatabaseTables(
 		}
 
 		return {
-			connection,
-			tables: tablesData.map((t) => ({ ...t, isSelected: false })),
+			data: {
+				connection,
+				tables: tablesData.map((t) => ({ ...t, isSelected: false })),
+			},
+			etag: generateEtag(connection.updatedAt),
 		};
 	} catch (error: any) {
 		throw APIError.badRequest(error.message || "Failed to connect to database");
 	} finally {
-		if (pool) {
-			await pool.end();
-		}
+		if (pool) await pool.end();
 	}
 }
 
-export async function getDatabaseConnection(
-	organizationId: string,
-): Promise<GetDatabaseConnectionResult | null> {
+export async function getDatabaseConnection(organizationId: string) {
 	const connection = await db.query.databaseConnection.findFirst({
 		where: eq(databaseConnection.organizationId, organizationId),
 	});
 
 	if (!connection) {
-		return null;
+		return {
+			data: null,
+			etag: generateEtag(new Date()),
+		};
 	}
 
 	const tablesData = (connection.tablesData as DatabaseTable[]) || [];
@@ -314,19 +349,22 @@ export async function getDatabaseConnection(
 	}));
 
 	return {
-		connection: {
-			id: connection.id,
-			name: connection.name,
-			isActive: connection.isActive,
+		data: {
+			connection: {
+				id: connection.id,
+				name: connection.name,
+				isActive: connection.isActive,
+			},
+			tables,
 		},
-		tables,
+		etag: generateEtag(connection.updatedAt),
 	};
 }
 
 export async function updateTableSelection(
 	organizationId: string,
 	data: UpdateTableSelectionInput,
-): Promise<GetDatabaseConnectionResult> {
+) {
 	return await db.transaction(async (tx) => {
 		const connection = await tx.query.databaseConnection.findFirst({
 			where: eq(databaseConnection.organizationId, organizationId),
@@ -372,12 +410,15 @@ export async function updateTableSelection(
 		}));
 
 		return {
-			connection: {
-				id: updated.id,
-				name: updated.name,
-				isActive: updated.isActive,
+			data: {
+				connection: {
+					id: updated.id,
+					name: updated.name,
+					isActive: updated.isActive,
+				},
+				tables,
 			},
-			tables,
+			etag: generateEtag(updated.updatedAt),
 		};
 	});
 }
@@ -408,6 +449,14 @@ export async function deleteDatabaseConnection(organizationId: string) {
 			.where(eq(databaseConnection.id, connection.id))
 			.returning();
 
-		return deleted;
+		if (!deleted)
+			throw APIError.internal("Failed to delete database connection");
+
+		const { updatedAt, ...deletedData } = deleted;
+
+		return {
+			data: deletedData,
+			etag: generateEtag(updatedAt),
+		};
 	});
 }

@@ -471,7 +471,9 @@ function PureModelSelectorCompact({
 		data: models,
 		isLoading,
 		error,
-	} = useApi<ChatModel[]>("/api/organization/model");
+	} = useApi<ChatModel[]>("/api/organization/model", {
+		persistCache: true,
+	});
 
 	useEffect(() => {
 		setMounted(true);

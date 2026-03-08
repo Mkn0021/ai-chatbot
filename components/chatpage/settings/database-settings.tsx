@@ -34,7 +34,9 @@ export function DatabaseSettings() {
 	const [localTables, setLocalTables] = useState<DatabaseTable[]>([]);
 
 	const { data: connectionData, isLoading } =
-		useApi<GetDatabaseConnectionResult | null>("/api/organization/database");
+		useApi<GetDatabaseConnectionResult | null>("/api/organization/database", {
+			persistCache: true,
+		});
 
 	const isConnected = !!connectionData;
 	const savedTables = connectionData?.tables || [];

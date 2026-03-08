@@ -15,7 +15,9 @@ export function OrganizationSettings() {
 		data: organization,
 		error,
 		isLoading,
-	} = useApi<Organization>("/api/organization");
+	} = useApi<Organization>("/api/organization", {
+		persistCache: true,
+	});
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();

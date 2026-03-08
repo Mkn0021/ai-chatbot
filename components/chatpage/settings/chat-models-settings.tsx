@@ -65,7 +65,9 @@ export function ChatModelsSettings() {
 		data: models,
 		error,
 		isLoading,
-	} = useApi<ModelItem[]>("/api/organization/model");
+	} = useApi<ModelItem[]>("/api/organization/model", {
+		persistCache: true,
+	});
 
 	const [addDialogOpen, setAddDialogOpen] = useState(false);
 	const [editDialogOpen, setEditDialogOpen] = useState(false);

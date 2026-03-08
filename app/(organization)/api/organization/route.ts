@@ -7,33 +7,50 @@ import {
 } from "@/app/(organization)/actions";
 
 // GET /api/organization
-export const GET = asyncHandler(async (_, context, __) => {
-	const organizationId = context.session!.user.organizationId;
+export const GET = asyncHandler(
+	async (_, context, __) => {
+		const organizationId = context.session!.user.organizationId;
 
-	if (!organizationId) {
-		throw APIError.notFound("User does not belong to an organization");
-	}
+		if (!organizationId) {
+			throw APIError.notFound("User does not belong to an organization");
+		}
 
-	const organization = await getOrganizationById({ organizationId });
+		const result = await getOrganizationById({ organizationId });
 
-	return {
-		data: organization,
-		message: "Organization fetched successfully",
-	};
-});
+		return {
+			...result,
+			message: "Organization fetched successfully",
+		};
+	},
+	{
+		cache: {
+			table: "organization",
+			getId: (context) => context.session?.user.organizationId ?? null,
+		},
+	},
+);
 
 // PUT /api/organization
-export const PUT = asyncHandler(async (_, context, data) => {
-	const organizationId = context.session!.user.organizationId;
+export const PUT = asyncHandler(
+	async (_, context, data) => {
+		const organizationId = context.session!.user.organizationId;
 
-	if (!organizationId) {
-		throw APIError.notFound("User does not belong to an organization");
-	}
+		if (!organizationId) {
+			throw APIError.notFound("User does not belong to an organization");
+		}
 
-	const organization = await updateOrganization(organizationId, data.body);
+		const result = await updateOrganization(organizationId, data.body);
 
-	return {
-		data: organization,
-		message: "Organization updated successfully",
-	};
-}, UpdateOrganizationSchema);
+		return {
+			...result,
+			message: "Organization updated successfully",
+		};
+	},
+	{
+		validationSchema: UpdateOrganizationSchema,
+		cache: {
+			table: "organization",
+			getId: (ctx) => ctx.session?.user.organizationId ?? null,
+		},
+	},
+);
