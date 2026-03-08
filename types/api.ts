@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type APIError from "@/lib/api/error";
+import { auth } from "@/app/(auth)/auth";
 
 export interface SuccessResponse<T> {
 	success: true;
@@ -17,6 +18,7 @@ export interface HandlerResult<T> {
 	data?: T;
 	message?: string;
 	statusCode?: number;
+	etag?: string;
 	file?: { buffer: Buffer; fileName: string; contentType: string };
 	cookies?: { name: string; value: string; maxAge?: number }[];
 	headers?: Record<string, string>;
@@ -27,6 +29,16 @@ export interface ValidationSchema {
 	query?: z.ZodSchema;
 	params?: z.ZodSchema;
 }
+
+export interface CacheConfig {
+	table: string;
+	getId: (context: {
+		params?: Record<string, string>;
+		session?: Session;
+	}) => string | null;
+}
+
+export type Session = Awaited<ReturnType<typeof auth.api.getSession>>;
 
 export type InferValidatedData<T extends ValidationSchema | undefined> =
 	T extends ValidationSchema
@@ -52,4 +64,5 @@ export type FetcherOptions<TResponse, TCache> = RequestInit & {
 	) => TCache | undefined;
 	cacheKey?: string;
 	toast?: ToastOptions<TResponse>;
+	persistCache?: boolean;
 };

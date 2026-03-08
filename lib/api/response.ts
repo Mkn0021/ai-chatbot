@@ -3,7 +3,9 @@ import { auth } from "@/app/(auth)/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { errorHandler } from "@/middlewares/error-handler";
 import { validateRequest } from "@/middlewares/validate-request";
+import { checkCache, persistCache } from "@/middlewares/handle-cache";
 import type {
+	CacheConfig,
 	ErrorResponse,
 	HandlerResult,
 	InferValidatedData,
@@ -88,39 +90,64 @@ export const asyncHandler = <T, S extends ValidationSchema | undefined>(
 		},
 		validatedData: InferValidatedData<S>,
 	) => Promise<HandlerResult<T>>,
-	schema?: S,
-	requireAuth = true,
+	options?: {
+		validationSchema?: S;
+		requireAuth?: boolean;
+		cache?: CacheConfig;
+	},
 ) => {
 	return async (
 		req: NextRequest,
 		context: { params: Promise<Record<string, string>> },
 	) => {
 		try {
-			// Resolve the Promise for params (Next.js 14+ compatibility)
 			const resolvedParams = await context.params;
-
 			const session = await auth.api.getSession({ headers: req.headers });
-			if (requireAuth && !session)
+
+			if ((options?.requireAuth ?? true) && !session) {
 				throw APIError.unauthorized(
 					"You must be logged in to access this resource",
 				);
+			}
 
-			// TODO: Implement input sanitization, rate limiting as needed
-			const validatedData = await validateRequest(req, schema, resolvedParams);
+			if (options?.cache) {
+				const cached = await checkCache(req, options.cache, {
+					params: resolvedParams,
+					session,
+				});
+				if (cached) return cached;
+			}
+
+			const validatedData = await validateRequest(
+				req,
+				options?.validationSchema,
+				resolvedParams,
+			);
+
 			const result = await handler(
 				req,
 				{ params: resolvedParams, session },
 				validatedData as InferValidatedData<S>,
 			);
 
+			if (options?.cache) {
+				await persistCache(result, options.cache, {
+					params: resolvedParams,
+					session,
+				});
+			}
+
 			return apiResponse.success(
 				result.data ?? null,
 				result.message,
-				result.statusCode || 200,
+				result.statusCode ?? 200,
 				{
 					...(result.file ? { file: result.file } : {}),
 					...(result.cookies ? { cookies: result.cookies } : {}),
-					...(result.headers ? { headers: result.headers } : {}),
+					headers: {
+						...(result.headers ?? {}),
+						...(result.etag ? { ETag: result.etag } : {}),
+					},
 				},
 			);
 		} catch (error) {
