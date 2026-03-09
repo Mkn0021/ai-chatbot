@@ -1,3 +1,4 @@
+import { env } from "./env";
 import { formatISO } from "date-fns";
 import { Redis } from "@upstash/redis";
 import { twMerge } from "tailwind-merge";
@@ -5,8 +6,6 @@ import { DBMessage } from "./db/schemas";
 import { clsx, type ClassValue } from "clsx";
 import { UIMessagePart, type UIMessage } from "ai";
 import type { ChatMessage, ChatTools, CustomUIDataTypes } from "@/types";
-
-export const redis = Redis.fromEnv();
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -99,3 +98,8 @@ export const formatChartValue = (value: unknown) => {
 export function generateEtag(timestamp: Date): string {
 	return timestamp.getTime().toString();
 }
+
+export const redis = new Redis({
+	url: process.env.KV_REST_API_URL,
+	token: process.env.KV_REST_API_TOKEN,
+});
