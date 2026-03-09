@@ -4,18 +4,27 @@ import { getAllUsers } from "@/app/(user)/actions";
 import { FetchUsersSchema } from "@/app/(user)/schema";
 
 // GET /api/user
-export const GET = asyncHandler(async (_, context, data) => {
-	const limit = data.query?.limit;
-	const offset = data.query?.offset ?? 0;
+export const GET = asyncHandler(
+	async (_, context, data) => {
+		const limit = data.query?.limit;
+		const offset = data.query?.offset ?? 0;
 
-	if (context.session!.user.role !== "admin") {
-		throw APIError.forbidden("Admin access required");
-	}
+		if (context.session!.user.role !== "admin") {
+			throw APIError.forbidden("Admin access required");
+		}
 
-	const users = await getAllUsers({ limit, offset });
+		const result = await getAllUsers({ limit, offset });
 
-	return {
-		data: users,
-		message: "Users fetched successfully",
-	};
-}, FetchUsersSchema);
+		return {
+			...result,
+			message: "Users fetched successfully",
+		};
+	},
+	{
+		validationSchema: FetchUsersSchema,
+		cache: {
+			table: "users",
+			getId: () => "all-users",
+		},
+	},
+);
