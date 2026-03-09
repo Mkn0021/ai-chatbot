@@ -131,7 +131,7 @@ export function Chat({
 					);
 
 				const apiKey = getLocalStorageItem(
-					`${currentModelIdRef.current}_api_key`,
+					`api_key:${currentModelIdRef.current}`,
 				);
 				const [provider] = currentModelIdRef.current.split("/");
 

@@ -138,7 +138,7 @@ interface ChatModelsTableProps {
 
 const ChatModelsTable = ({ models, onEdit }: ChatModelsTableProps) => {
 	const handleDeleteModel = async (modelId: string) => {
-		removeLocalStorageItem(`${modelId}_api_key`);
+		removeLocalStorageItem(`api_key:${modelId}`);
 
 		await fetcher<ModelItem, ModelItem[]>(
 			`/api/organization/model?id=${modelId}`,
@@ -155,7 +155,7 @@ const ChatModelsTable = ({ models, onEdit }: ChatModelsTableProps) => {
 	};
 
 	const copyToClipboard = async (modelId: string) => {
-		const apiKey = getLocalStorageItem(`${modelId}_api_key`);
+		const apiKey = getLocalStorageItem(`api_key:${modelId}`);
 		if (!apiKey) {
 			toast.error("No API key found");
 			return;
@@ -165,7 +165,7 @@ const ChatModelsTable = ({ models, onEdit }: ChatModelsTableProps) => {
 	};
 
 	const maskKey = (modelId: string) => {
-		const key = getLocalStorageItem(`${modelId}_api_key`);
+		const key = getLocalStorageItem(`api_key:${modelId}`);
 		if (!key) return "Not set";
 		return `${key.slice(0, 3)}••••••`;
 	};
@@ -331,7 +331,7 @@ function ModelDialog({
 				name: selectedModel.name,
 				provider: selectedModel.provider,
 				description: selectedModel.description,
-				apiKey: getLocalStorageItem(`${selectedModel.id}_api_key`),
+				apiKey: getLocalStorageItem(`api_key:${selectedModel.id}`),
 				baseUrl: selectedModel.baseUrl || "",
 			});
 		}
@@ -372,7 +372,7 @@ function ModelDialog({
 			);
 
 			if (form.apiKey) {
-				setLocalStorageItem(`${result.id}_api_key`, form.apiKey);
+				setLocalStorageItem(`api_key:${result.id}`, form.apiKey);
 			}
 			onOpenChange(false);
 		} else if (mode === "edit" && selectedModel) {
@@ -397,7 +397,7 @@ function ModelDialog({
 			);
 
 			if (form.apiKey) {
-				setLocalStorageItem(`${selectedModel.id}_api_key`, form.apiKey);
+				setLocalStorageItem(`api_key:${selectedModel.id}`, form.apiKey);
 			}
 			onOpenChange(false);
 		}

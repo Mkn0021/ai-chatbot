@@ -28,6 +28,27 @@ export function SidebarUserNav({ user }: { user: User }) {
 	const { setTheme, resolvedTheme } = useTheme();
 	const [settingsOpen, setSettingsOpen] = useState(false);
 
+	const handleLogout = async () => {
+		if (isPending) {
+			toast.error("Checking authentication status, please try again!");
+			return;
+		}
+
+		await authClient.signOut();
+
+		// Clear all cached data and etags
+		Object.keys(localStorage)
+			.filter(
+				(key) =>
+					key.startsWith("cache:") ||
+					key.startsWith("etag:") ||
+					key.startsWith("api_key:"),
+			)
+			.forEach((key) => localStorage.removeItem(key));
+
+		router.push("/");
+	};
+
 	return (
 		<SidebarMenu>
 			<SidebarMenuItem>
@@ -85,17 +106,7 @@ export function SidebarUserNav({ user }: { user: User }) {
 						<DropdownMenuItem asChild data-testid="user-nav-item-auth">
 							<button
 								className="w-full cursor-pointer"
-								onClick={async () => {
-									if (isPending) {
-										toast.error(
-											"Checking authentication status, please try again!",
-										);
-										return;
-									}
-
-									await authClient.signOut();
-									router.push("/");
-								}}
+								onClick={handleLogout}
 								type="button"
 							>
 								Sign out
