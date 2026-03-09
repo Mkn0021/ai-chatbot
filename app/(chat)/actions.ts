@@ -4,7 +4,7 @@ import { Pool } from "pg";
 import db from "@/lib/db";
 import APIError from "@/lib/api/error";
 import { TITLE_PROMPT } from "@/lib/ai/prompts";
-import { getTextFromMessage } from "@/lib/utils";
+import { getTextFromMessage, generateEtag } from "@/lib/utils";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { generateText, LanguageModel, type UIMessage } from "ai";
 import type {
@@ -24,6 +24,7 @@ import {
 	gte,
 	inArray,
 	lt,
+	max,
 	type SQL,
 } from "drizzle-orm";
 import {
@@ -66,11 +67,16 @@ export async function deleteChatById({ id }: { id: string }) {
 		await db.delete(message).where(eq(message.chatId, id));
 		await db.delete(stream).where(eq(stream.chatId, id));
 
-		const [chatsDeleted] = await db
-			.delete(chat)
-			.where(eq(chat.id, id))
-			.returning();
-		return chatsDeleted;
+		const [deleted] = await db.delete(chat).where(eq(chat.id, id)).returning();
+
+		if (!deleted) throw APIError.internal("Failed to delete chat");
+
+		const { updatedAt, ...deletedData } = deleted;
+
+		return {
+			data: deletedData,
+			etag: generateEtag(updatedAt),
+		};
 	} catch (_error) {
 		throw APIError.badRequest("Failed to delete chat by id");
 	}
@@ -84,7 +90,10 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
 			.where(eq(chat.userId, userId));
 
 		if (userChats.length === 0) {
-			return { deletedCount: 0 };
+			return {
+				data: { deletedCount: 0 },
+				etag: generateEtag(new Date()),
+			};
 		}
 
 		const chatIds = userChats.map((c) => c.id);
@@ -98,7 +107,15 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
 			.where(eq(chat.userId, userId))
 			.returning();
 
-		return { deletedCount: deletedChats.length };
+		const [{ maxUpdatedAt }] = await db
+			.select({ maxUpdatedAt: max(chat.updatedAt) })
+			.from(chat)
+			.where(inArray(chat.id, chatIds));
+
+		return {
+			data: { deletedCount: deletedChats.length },
+			etag: generateEtag(maxUpdatedAt ?? new Date()),
+		};
 	} catch (_error) {
 		throw APIError.badRequest("Failed to delete all chats by user id");
 	}
@@ -107,6 +124,7 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
 export async function getChatsByUserId(inputData: GetChatsByUserId) {
 	try {
 		const extendedLimit = inputData.limit + 1;
+		const baseWhereCondition = eq(chat.userId, inputData.id);
 
 		const query = (whereCondition?: SQL<any>) =>
 			db
@@ -114,13 +132,24 @@ export async function getChatsByUserId(inputData: GetChatsByUserId) {
 				.from(chat)
 				.where(
 					whereCondition
-						? and(whereCondition, eq(chat.userId, inputData.id))
-						: eq(chat.userId, inputData.id),
+						? and(whereCondition, baseWhereCondition)
+						: baseWhereCondition,
 				)
 				.orderBy(desc(chat.createdAt))
 				.limit(extendedLimit);
 
+		const maxQuery = (whereCondition?: SQL<any>) =>
+			db
+				.select({ latestUpdatedAt: max(chat.updatedAt) })
+				.from(chat)
+				.where(
+					whereCondition
+						? and(whereCondition, baseWhereCondition)
+						: baseWhereCondition,
+				);
+
 		let filteredChats: Chat[] = [];
+		let maxResult: { latestUpdatedAt: Date | null } | undefined;
 
 		if (inputData.startingAfter) {
 			const [selectedChat] = await db
@@ -135,7 +164,11 @@ export async function getChatsByUserId(inputData: GetChatsByUserId) {
 				);
 			}
 
-			filteredChats = await query(gt(chat.createdAt, selectedChat.createdAt));
+			const condition = gt(chat.createdAt, selectedChat.createdAt);
+			[filteredChats, [maxResult]] = await Promise.all([
+				query(condition),
+				maxQuery(condition),
+			]);
 		} else if (inputData.endingBefore) {
 			const [selectedChat] = await db
 				.select()
@@ -149,16 +182,29 @@ export async function getChatsByUserId(inputData: GetChatsByUserId) {
 				);
 			}
 
-			filteredChats = await query(lt(chat.createdAt, selectedChat.createdAt));
+			const condition = lt(chat.createdAt, selectedChat.createdAt);
+			[filteredChats, [maxResult]] = await Promise.all([
+				query(condition),
+				maxQuery(condition),
+			]);
 		} else {
-			filteredChats = await query();
+			[filteredChats, [maxResult]] = await Promise.all([query(), maxQuery()]);
 		}
 
 		const hasMore = filteredChats.length > inputData.limit;
+		const chats = hasMore
+			? filteredChats.slice(0, inputData.limit)
+			: filteredChats;
+
+		// MAX() returns null when no rows exist
+		const maxUpdatedAt: Date = maxResult?.latestUpdatedAt ?? new Date();
 
 		return {
-			chats: hasMore ? filteredChats.slice(0, inputData.limit) : filteredChats,
-			hasMore,
+			data: {
+				chats,
+				hasMore,
+			},
+			etag: generateEtag(maxUpdatedAt),
 		};
 	} catch (_error) {
 		throw APIError.badRequest("Failed to get chats by user id");
@@ -238,7 +284,22 @@ export async function voteMessage(inputData: VoteMessageInput) {
 
 export async function getVotesByChatId({ id }: { id: string }) {
 	try {
-		return await db.select().from(vote).where(eq(vote.chatId, id));
+		const [votes, maxResult] = await Promise.all([
+			db.select().from(vote).where(eq(vote.chatId, id)),
+			db
+				.select({ latestUpdatedAt: max(vote.updatedAt) })
+				.from(vote)
+				.where(eq(vote.chatId, id))
+				.then((result) => result[0]),
+		]);
+
+		// MAX() returns null when no rows exist
+		const maxUpdatedAt: Date = maxResult?.latestUpdatedAt ?? new Date();
+
+		return {
+			data: votes,
+			etag: generateEtag(maxUpdatedAt),
+		};
 	} catch (_error) {
 		throw APIError.badRequest("Failed to get votes by chat id");
 	}
@@ -295,12 +356,20 @@ export async function updateChatVisibilityById(
 	input: UpdateChatVisibilityInput,
 ) {
 	try {
-		return await db
+		const [updatedChat] = await db
 			.update(chat)
-			.set({
-				visibility: input.visibility,
-			})
-			.where(eq(chat.id, input.id));
+			.set({ visibility: input.visibility, updatedAt: new Date() })
+			.where(eq(chat.id, input.id))
+			.returning();
+
+		if (!updatedChat) {
+			throw APIError.notFound("Chat not found");
+		}
+
+		return {
+			data: updatedChat,
+			etag: generateEtag(updatedChat.updatedAt),
+		};
 	} catch (_error) {
 		throw APIError.badRequest("Failed to update chat visibility by id");
 	}
@@ -314,10 +383,24 @@ export async function updateChatTitleById({
 	title: string;
 }) {
 	try {
-		return await db.update(chat).set({ title }).where(eq(chat.id, chatId));
+		const [updatedChat] = await db
+			.update(chat)
+			.set({ title, updatedAt: new Date() })
+			.where(eq(chat.id, chatId))
+			.returning();
+
+		if (!updatedChat) {
+			console.warn("Chat not found for title update", chatId);
+			return null;
+		}
+
+		return {
+			data: updatedChat,
+			etag: generateEtag(updatedChat.updatedAt),
+		};
 	} catch (error) {
 		console.warn("Failed to update title for chat", chatId, error);
-		return;
+		return null;
 	}
 }
 

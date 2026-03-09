@@ -220,23 +220,28 @@ export async function POST(req: Request) {
 }
 
 // DELETE - api/chat
-export const DELETE = asyncHandler(async (_, context, data) => {
-	const { chatId } = data.query;
+export const DELETE = asyncHandler(
+	async (_, context, data) => {
+		const { chatId } = data.query;
 
-	const chat = await getChatById({ id: chatId });
+		const chat = await getChatById({ id: chatId });
 
-	if (!chat) {
-		throw APIError.notFound("Chat not found");
-	}
+		if (!chat) {
+			throw APIError.notFound("Chat not found");
+		}
 
-	if (chat.userId !== context.session!.user.id) {
-		throw APIError.forbidden("You are not authorized to delete this chat");
-	}
+		if (chat.userId !== context.session!.user.id) {
+			throw APIError.forbidden("You are not authorized to delete this chat");
+		}
 
-	const deletedChat = await deleteChatById({ id: chatId });
+		const result = await deleteChatById({ id: chatId });
 
-	return {
-		data: deletedChat,
-		message: "Chat deleted successfully",
-	};
-}, ChatIdQuerySchema);
+		return {
+			...result,
+			message: "Chat deleted successfully",
+		};
+	},
+	{
+		validationSchema: ChatIdQuerySchema,
+	},
+);

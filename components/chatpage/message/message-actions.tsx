@@ -50,12 +50,6 @@ export function PureMessageActions({
 			method: "PATCH",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ chatId, messageId: message.id, isUpvoted }),
-			mutator: (current) => {
-				const without = (current ?? []).filter(
-					(v) => v.messageId !== message.id,
-				);
-				return [...without, { chatId, messageId: message.id, isUpvoted }];
-			},
 			toast: {
 				loading: isUpvoted ? "Upvoting Response..." : "Downvoting Response...",
 				success: isUpvoted ? "Upvoted Response!" : "Downvoted Response!",
