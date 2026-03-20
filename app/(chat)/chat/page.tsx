@@ -20,8 +20,8 @@ export default function Page() {
 }
 
 async function NewChatPage() {
-	const id = generateUUID();
 	const cookieStore = await cookies();
+	const id = generateUUID();
 
 	// Get model from cookie or default
 	const modelCookie = cookieStore.get("chat-model");
