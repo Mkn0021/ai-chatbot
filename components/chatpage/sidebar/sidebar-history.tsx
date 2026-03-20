@@ -1,6 +1,5 @@
 "use client";
 
-import { toast } from "sonner";
 import { useState } from "react";
 import { motion } from "motion/react";
 import useSWRInfinite from "swr/infinite";
@@ -107,10 +106,16 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 		setSize,
 		isValidating,
 		isLoading,
-		mutate,
-	} = useSWRInfinite<ChatHistory>(getChatHistoryPaginationKey, fetcher, {
-		fallbackData: [],
-	});
+	} = useSWRInfinite<ChatHistory>(
+		getChatHistoryPaginationKey,
+		(key: string) =>
+			fetcher<ChatHistory>(key, {
+				persistCache: key === `/api/history?limit=${PAGE_SIZE}`,
+			}),
+		{
+			fallbackData: [],
+		},
+	);
 
 	const router = useRouter();
 	const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -130,32 +135,27 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 
 		setShowDeleteDialog(false);
 
-		const deletePromise = fetch(`/api/chat?chatId=${chatToDelete}`, {
+		fetcher<{ id: string }, ChatHistory>(`/api/chat?chatId=${chatToDelete}`, {
 			method: "DELETE",
-		});
+			cacheKey: `/api/history?limit=${PAGE_SIZE}`,
+			mutator: (page) => {
+				if (!page) return page;
 
-		toast.promise(deletePromise, {
-			loading: "Deleting chat...",
-			success: () => {
-				mutate((chatHistories) => {
-					if (chatHistories) {
-						return chatHistories.map((chatHistory) => ({
-							...chatHistory,
-							chats: chatHistory.chats.filter(
-								(chat) => chat.id !== chatToDelete,
-							),
-						}));
-					}
-				});
-
-				if (isCurrentChat) {
-					router.replace("/chat");
-					router.refresh();
-				}
-
-				return "Chat deleted successfully";
+				return {
+					...page,
+					chats: page.chats.filter((chat) => chat.id !== chatToDelete),
+				};
 			},
-			error: "Failed to delete chat",
+			toast: {
+				loading: "Deleting chat...",
+				success: "Chat deleted successfully",
+				error: "Failed to delete chat",
+			},
+		}).then(() => {
+			if (isCurrentChat) {
+				router.replace("/chat");
+				router.refresh();
+			}
 		});
 	};
 

@@ -1,32 +1,20 @@
 "use client";
 
 import APIError from "@/lib/api/error";
-import { toast as sonnerToast } from "sonner";
-import useSWR, { type SWRConfiguration, type SWRResponse } from "swr";
-import { getLocalStorageItem, setLocalStorageItem } from "@/lib/utils";
 import { mutate as globalMutate } from "swr";
+import { toast as sonnerToast } from "sonner";
 import type { FetcherOptions } from "@/types";
+import useSWR, { type SWRConfiguration, type SWRResponse } from "swr";
+
+const CACHE_NAME = "api-cache:v1";
 
 const DEFAULT_SWR_CONFIG = {
 	revalidateOnFocus: false,
 	revalidateOnReconnect: false,
 	shouldRetryOnError: false,
-	dedupingInterval: 3600000,
+	dedupingInterval: 86400000, // 24 hours
 	errorRetryCount: 2,
 } satisfies SWRConfiguration;
-
-const ETAG_PREFIX = "etag:";
-const CACHE_PREFIX = "cache:";
-
-const readStorage = <T>(key: string): T | undefined => {
-	const raw = getLocalStorageItem(`${CACHE_PREFIX}${key}`);
-	if (!raw) return undefined;
-	try {
-		return JSON.parse(raw) as T;
-	} catch {
-		return undefined;
-	}
-};
 
 const defaultMutator = <TResponse, TCache>(
 	method: string,
@@ -72,17 +60,17 @@ const execute = async <TResponse, TCache>(
 	const isGet = method.toUpperCase() === "GET";
 
 	if (isGet) {
-		const storedEtag = getLocalStorageItem(`${ETAG_PREFIX}${key}`);
-		if (storedEtag) {
-			init.headers = { ...init.headers, "If-None-Match": storedEtag };
+		const cached = await getCacheItem<{ data: TResponse; etag?: string }>(key);
+		if (cached?.etag) {
+			init.headers = { ...init.headers, "If-None-Match": cached.etag };
 		}
 	}
 
 	const response = await fetch(input, init);
 
 	if (response.status === 304) {
-		const cached = readStorage<TResponse>(key);
-		if (cached) return cached;
+		const cached = await getCacheItem<{ data: TResponse; etag?: string }>(key);
+		if (cached) return cached.data;
 	}
 
 	if (!response.ok) {
@@ -97,11 +85,8 @@ const execute = async <TResponse, TCache>(
 	const etag = response.headers.get("ETag");
 
 	if (isGet) {
-		const previousEtag = getLocalStorageItem(`${ETAG_PREFIX}${key}`);
-		if (etag && etag !== previousEtag) {
-			if (persistCache)
-				setLocalStorageItem(`${CACHE_PREFIX}${key}`, JSON.stringify(data));
-			setLocalStorageItem(`${ETAG_PREFIX}${key}`, etag);
+		if (etag && persistCache) {
+			await setCacheItem(key, { data, etag });
 		}
 		return data;
 	}
@@ -115,9 +100,8 @@ const execute = async <TResponse, TCache>(
 		{ revalidate: false },
 	);
 
-	if (updated) {
-		setLocalStorageItem(`${CACHE_PREFIX}${key}`, JSON.stringify(updated));
-		if (etag) setLocalStorageItem(`${ETAG_PREFIX}${key}`, etag);
+	if (updated !== undefined) {
+		await setCacheItem(key, { data: updated, etag: etag });
 	}
 
 	return data;
@@ -127,45 +111,58 @@ export const fetcher = <TResponse, TCache = TResponse>(
 	input: RequestInfo | URL,
 	options?: FetcherOptions<TResponse, TCache>,
 ): Promise<TResponse> => {
-	if (!options?.toast) return execute(input, options);
+	const executePromise = execute(input, options);
 
-	const { toast } = options;
-	let resolveResponse!: (value: TResponse) => void;
-	let rejectResponse!: (reason: unknown) => void;
+	if (options?.toast) {
+		const { toast } = options;
+		sonnerToast.promise(executePromise, {
+			loading: toast.loading,
+			success: toast.success as string | ((data: TResponse) => string),
+			error: toast.error as string | ((error: unknown) => string),
+		});
+	}
 
-	const promise = new Promise<TResponse>((res, rej) => {
-		resolveResponse = res;
-		rejectResponse = rej;
-	});
-
-	sonnerToast.promise(promise, {
-		loading: toast.loading,
-		success: toast.success as string | ((data: TResponse) => string),
-		error: toast.error as string | ((error: unknown) => string),
-	});
-
-	return execute(input, options).then(
-		(data) => {
-			resolveResponse(data);
-			return data;
-		},
-		(error) => {
-			rejectResponse(error);
-			throw error;
-		},
-	);
+	return executePromise;
 };
 
 export const useApi = <T>(
 	url: string | null,
 	options?: SWRConfiguration<T, APIError> & { persistCache?: boolean },
-): SWRResponse<T, APIError> =>
-	useSWR<T, APIError>(
+): SWRResponse<T, APIError> => {
+	return useSWR<T, APIError>(
 		url,
 		(key: string) => fetcher<T>(key, { persistCache: options?.persistCache }),
 		{
 			...DEFAULT_SWR_CONFIG,
 			...options,
-			fallbackData: url ? readStorage<T>(url) : undefined,
+			fallbackData: undefined,
 		},
 	);
+};
+
+const getCacheItem = async <T>(key: string): Promise<T | undefined> => {
+	if (typeof window === "undefined") return undefined;
+	try {
+		const cache = await caches.open(CACHE_NAME);
+		const response = await cache.match(key);
+		if (!response) return undefined;
+		const json = await response.json();
+		return json as T;
+	} catch {
+		return undefined;
+	}
+};
+
+const setCacheItem = async (key: string, value: unknown): Promise<void> => {
+	if (typeof window === "undefined") return;
+	try {
+		const cache = await caches.open(CACHE_NAME);
+		const response = new Response(JSON.stringify(value), {
+			status: 200,
+			headers: { "Content-Type": "application/json" },
+		});
+		await cache.put(key, response);
+	} catch {
+		// silently fail
+	}
+};

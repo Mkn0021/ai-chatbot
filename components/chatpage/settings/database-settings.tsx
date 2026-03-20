@@ -122,7 +122,21 @@ export function DatabaseSettings() {
 
 			<div className="space-y-4">
 				<div className="space-y-2">
-					<Label htmlFor="connection-string">Connection String</Label>
+					<Label htmlFor="connection-string">
+						{isLoading ? (
+							<>
+								<Loader2 className="h-4 w-4 animate-spin" />
+								Checking connection...
+							</>
+						) : isConnected ? (
+							<div className="flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
+								<CheckCircle2 className="h-4 w-4" />
+								Connected
+							</div>
+						) : (
+							"Connection String"
+						)}
+					</Label>
 					<div className="flex gap-2">
 						<Input
 							id="connection-string"
@@ -155,17 +169,6 @@ export function DatabaseSettings() {
 							</span>
 						</Button>
 					</div>
-					{isLoading ? (
-						<div className="text-muted-foreground flex items-center gap-2 text-sm">
-							<Loader2 className="h-4 w-4 animate-spin" />
-							Checking connection...
-						</div>
-					) : isConnected ? (
-						<div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-							<CheckCircle2 className="h-4 w-4" />
-							Connected successfully
-						</div>
-					) : null}
 				</div>
 
 				{isConnected && hasChanges && (

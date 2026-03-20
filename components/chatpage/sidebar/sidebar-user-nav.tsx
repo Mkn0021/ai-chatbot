@@ -36,14 +36,21 @@ export function SidebarUserNav({ user }: { user: User }) {
 
 		await authClient.signOut();
 
-		// Clear all cached data and etags
+		// Clear all cached data from CacheStorage
+		if (typeof window !== "undefined" && "caches" in window) {
+			try {
+				const cacheNames = await caches.keys();
+				await Promise.all(
+					cacheNames.map((cacheName) => caches.delete(cacheName)),
+				);
+			} catch (error) {
+				console.error("Failed to clear cache:", error);
+			}
+		}
+
+		// Clear API keys from localStorage
 		Object.keys(localStorage)
-			.filter(
-				(key) =>
-					key.startsWith("cache:") ||
-					key.startsWith("etag:") ||
-					key.startsWith("api_key:"),
-			)
+			.filter((key) => key.startsWith("api_key:"))
 			.forEach((key) => localStorage.removeItem(key));
 
 		router.push("/");
